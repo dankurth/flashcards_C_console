@@ -1,50 +1,5 @@
 int code;
 
-
-#ifdef DOS
-void sel_datafile(char *datafile)
-{
-   struct ffblk f;
-   register int done;
-   struct ffblk ks[100];
-   int j = 0;
-   int k = 0;
-
-   done = findfirst("*.rec", &f, 0);
-   while((!done) && (j<100))
-      { ks[j++] = f; done = findnext(&f); }
-   j--; /* j is now last subscript used */
-   for (k=0; k<=j; k++) disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,0);
-   k=0; disp_str(0,0,ks[0].ff_name,1);
-   do
-      {
-      code = getcode();
-      switch (code)
-	 {
-	 case U_ARROW: disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,0);
-	   if( k>0 ) --k;
-	   else k=j; disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,1);
-	   break;
-	 case D_ARROW: disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,0);
-	   if( k<j ) ++k;
-	   else k = 0; disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,1);
-	      break;
-	 case L_ARROW: disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,0);
-	   if( k>=20 ) k-=20;
-	   disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,1);
-	   break;
-	 case R_ARROW: disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,0);
-	   if( k+20<=j ) k+=20;
-	   disp_str(k-20*(k/20),(k/20)*15,ks[k].ff_name,1);
-	      break;
-	 case ENTER: break;
-	 }
-      }
-   while (code!=ENTER);
-   strcpy(datafile,ks[k].ff_name);
-}
-#else
-
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
@@ -97,4 +52,3 @@ while (code!=ENTER);
 strcpy(datafile,filelist[k]);
 }
 
-#endif

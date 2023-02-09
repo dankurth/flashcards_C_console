@@ -1,8 +1,3 @@
-/* #define DOS */
-#ifdef DOS
-#define TRUE 1
-#define FALSE 0
-#endif
 
 #define Q_SIZE 480
 #define A_SIZE 480
@@ -28,3 +23,4 @@
 #define STOPBIT 0x20
 #define ver_offset 3
 #define hor_offset 48
+

@@ -1,9 +1,10 @@
 /* main program for C version of FLASH by Dan Kurth */
-/* 
-dos version compiled using Borland C: bcc fcm.c
-unix version using gcc as: gcc -o flash fcm.c -lcurses -ltermcap
-unix version using gcc on linux system as: 
-  gcc -o ../flash fcm.c -I/usr/include/ncurses -lncurses -ltermcap
+/*
+Examples of builds tested:
+On virtual (VirtualBox 6.1.26) Windows XP using MinGW version v10.0.0:
+  gcc -I/MinGW/include/ncurses -o flash fcm.c -lncurses -L/MinGW/bin -static
+On Debian GNU/Linux 11 (bullseye):
+  gcc -o flash fcm.c -I/usr/include/ncurses -lncurses -ltermcap
 */
 
 #include <stdio.h>
@@ -12,18 +13,9 @@ unix version using gcc on linux system as:
 #include <time.h>
 #include "fcm.h"
 
-#ifdef DOS
-#include <dos.h>
-#include <dir.h>
-#include <conio.h>
-#else
 #include <dirent.h>
 #include <curses.h>
-#endif
-/* following are unix/dos routines */
-/* basic idea is to have all graphics stuff separate from main prog so
-that for diff stuff like Windows,Xwindows,vt100,dos,etc change only them
-and not have to change anything in main prog */
+
 #include "cursor.inc"
 #include "clear.inc"
 #include "disp-str.inc"
@@ -33,7 +25,7 @@ and not have to change anything in main prog */
 #include "sel-file.inc"
 #include "byebye.inc"
 
-		  /* C routines */
+            /* C routines */
 int  GetUser(void);              /* prompt for user name, calc hex id */
 void cursor_off(void);     /* turn cursor off */
 void cursor_on(void);      /* turn cursor on  */
@@ -66,11 +58,9 @@ void disp_stats_legend(void); /* show legend for session & file stats */
 void go_byebye(void);   /* clear screen, cleanup unix curses stuff */
 int getcode(void); /* returns an integer for key pressed */
 
-#ifndef DOS
 void clrscr() { clear(); refresh(); }
-#endif
 
-	     /* assembly language routines (dos) or in c for unix */
+          /* assembly language routines (dos) or in c for unix */
 void clr_scr(int attribute);
 void disp_str(int row, int column, char strtext[], int attrib);
 void blanks(int row1, int column1, int row2, int column2, int attribute);
@@ -134,25 +124,22 @@ int score = 0;
 main(int argc, char *argv[])
    {
    int arg;   /* used in for loop involving command line args only */
-#ifndef DOS
+
 initscr();
 cbreak();
 noecho();
 keypad(stdscr,TRUE);
 leaveok(stdscr,TRUE);
 usrid=1;
-#else
-while(!GetUser());
-#endif
 
    clr_scr(0);
    ptrfirst = ptrlast = NULL;
    cursor_off();
    for (arg=1; arg<argc; arg++)   /* get command line arguments */
      {
-     /* if (strncmp(argv[arg],"/h",2)==0) honor=TRUE; */ /* enable honor system */ 
-     if (strncmp(argv[arg],"-m",2)==0) 
-       { 
+     /* if (strncmp(argv[arg],"/h",2)==0) honor=TRUE; */ /* enable honor system */
+     if (strncmp(argv[arg],"-m",2)==0)
+       {
        max_recs=atoi(argv[arg+1]); sprintf(strnum,"%d",max_recs); arg++;
        /* disp_str(15,15,strnum,1);  getch(); */
        }
@@ -161,11 +148,7 @@ while(!GetUser());
    if(strncmp(datafile,"NoName",6)!=0) cntfile();
    msg(0);
 
-#ifdef DOS
-   randomize();
-#else
    srand(1);
-#endif
 
    while (TRUE)
       {
@@ -177,19 +160,19 @@ while(!GetUser());
       {
       code = getcode();
       switch (code)
-	 {
-	 case U_ARROW: disp_str(pos-firstrow+ver_offset,hor_offset,str[pos],0);
-	   if( pos>firstrow ) --pos;
-	   else pos = lastrow;
-	   disp_str(pos-firstrow+ver_offset,hor_offset,str[pos],1);
-	   break;
-	 case D_ARROW: disp_str(pos-firstrow+ver_offset,hor_offset,str[pos],0);
-	   if( pos<lastrow ) ++pos;
-	   else pos = firstrow;
-	   disp_str(pos-firstrow+ver_offset,hor_offset,str[pos],1);
-	   break;
-	 case ENTER: action(); code = ENTER; break;
-	 }
+      {
+      case U_ARROW: disp_str(pos-firstrow+ver_offset,hor_offset,str[pos],0);
+	if( pos>firstrow ) --pos;
+        else pos = lastrow;
+        disp_str(pos-firstrow+ver_offset,hor_offset,str[pos],1);
+        break;
+      case D_ARROW: disp_str(pos-firstrow+ver_offset,hor_offset,str[pos],0);
+        if( pos<lastrow ) ++pos;
+        else pos = firstrow;
+        disp_str(pos-firstrow+ver_offset,hor_offset,str[pos],1);
+        break;
+      case ENTER: action(); code = ENTER; break;
+      }
       }
       while (code!=ENTER);
       }
@@ -209,28 +192,16 @@ for (row=firstrow; row<=lastrow; row++)
 void msg(int msgnum)
 {
 char *msgptr[] = {
-#ifdef DOS
-"ENTER-Make Selection  -Scroll Up  -Scroll Down ", 
-"ESC-Menu    INS-Add Card    DEL-Delete Card    -Prev    -Next   PgUp-Up 20    PgDn-Down 20    HOME-1st    END-Last ",
-"Enter questions and answers, To return to view/edit press <enter> w/out input ",
-"Picture answer to yourself, then press any key to see if you were right ",
-"- Answer was Wrong, - Answer was Right, ESC-Quit ", 
-"Press any key to continue ",
-"ENTER-Make Selection  -Scroll Up  -Scroll Down ", 
-"Enter letter that matches correct answer ", 
-"Press any key to continue, or q to quit ", };
-#else
-"Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ENTER=Make Selection", 
+"Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ENTER=Make Selection",
 "Q-Menu    INS-Add Card    DEL-Delete Card    -Prev    -Next   PgUp-Up 20    PgDn-Down 20    HOME-1st    END-Last ",
 "Enter questions and answers, To return to view/edit press <enter> w/out input ",
 "Picture answer to yourself, then press any key to see if you were right ",
 "Left Arrow=Answer was Wrong, Right Arrow=Answer was Right, Q=Quit ",
 "Press any key to continue ",
-"ENTER-Make Selection  Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ", 
-"Enter letter that matches correct answer ", 
+"ENTER-Make Selection  Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ",
+"Enter letter that matches correct answer ",
 "Press any key to continue, or q to quit ", };
-#endif
-	/*  some lines above continue that way ----->>>  */
+     /*  some lines above continue that way ----->>>  */
 
 blanks(22,0,23,79,0);
 disp_str(22,0,msgptr[msgnum],0);
@@ -243,7 +214,7 @@ switch(pos)
    {
    case 0: clr_scr(0); sel_datafile(&datafile[0]); cntfile(); break;
    case 1: if (honor) { clr_scr(0); firstrow=4; lastrow=7; pos=4; break; }
-	   else { myflash(0); break; }             /* multiple choice  */
+        else { myflash(0); break; }             /* multiple choice  */
    case 2: clrfile(); break;                      /* clear users stats */
    case 3: go_byebye();                             /* quit */
    case 4: myflash(0); break;                         /* multiple choice */
@@ -269,7 +240,7 @@ int rfile()
       }
    clear_cardmem(); /* test here, so can switch between mult & honor */
    ptrfirst = (struct myflashcard *) malloc(sizeof(struct myflashcard));
-   ptrfirst->question=NULL; ptrfirst->answer=NULL; 
+   ptrfirst->question=NULL; ptrfirst->answer=NULL;
    if(!ptrfirst)
       {
       disp_str(1,0,"Out of memory at first card",0);
@@ -286,104 +257,104 @@ int rfile()
       else ptrthis->ans_stat='N';
       if(usrid==0) ptrthis->ans_stat='N';
       if(ptrthis->ans_stat == 'N')
-	 {
-	 ptrthis->tries_session=0;
-	 ptrthis->disk_fptr = ftell(fptr)-3;
-	 j=0;
-	 while(((ch=getc(fptr))!='=') && j<Q_SIZE) /* cut off if too long */
-	    {
+      {
+      ptrthis->tries_session=0;
+      ptrthis->disk_fptr = ftell(fptr)-3;
+      j=0;
+      while(((ch=getc(fptr))!='=') && j<Q_SIZE) /* cut off if too long */
+         {
             qbuffer[j]=ch; j++;
-	    }
+         }
          qbuffer[j]='\0';
          /* printw("qbuffer %s\n",qbuffer); refresh();  */
-         ptrthis->question=(char *) malloc(strlen(qbuffer)+1);
-         if(ptrthis->question==NULL) 
+	 ptrthis->question=(char *) malloc(strlen(qbuffer)+1);
+         if(ptrthis->question==NULL)
            {
            disp_str(1,0,"malloc failed for question: ",0);
            disp_str(1,28,qbuffer,0); /* refresh(); */ getch(); go_byebye();
            }
          strncpy(ptrthis->question,qbuffer,strlen(qbuffer));
-         ptrthis->question[j]='\0';
+	 ptrthis->question[j]='\0';
          /* printw("question %s\n",ptrthis->question); refresh(); */
-         
-	 if(ch!='=')while((ch=getc(fptr))!='=');  /* if cut off move past excess to the start of next read */
+
+      if(ch!='=')while((ch=getc(fptr))!='=');  /* if cut off move past excess to the start of next read */
 
          while(TRUE) /* skip spaces and newlines preceding start of answer */
-           {
-           ch=getc(fptr); 
+	   {
+           ch=getc(fptr);
            if((ch!='\n') && (ch!=' ')) break; /* if newline or space loop again */
            }
          ungetc(ch,fptr);
 
-	 j=0;
-	 while(((ch=getc(fptr))!='}') && j<A_SIZE)
-	    {
-	    if (ch==EOF)
-	       {
-	       fclose(fptr);
-	       clrscr();
-	       printf("\n File read error at line %d",Ncount+Ycount+1);
-	       printf("\n Premature EOF");
-	       printf("\n Press any key to continue"); getch();
-	       go_byebye();
-	       }
+      j=0;
+      while(((ch=getc(fptr))!='}') && j<A_SIZE)
+         {
+         if (ch==EOF)
+            {
+            fclose(fptr);
+            clrscr();
+	    printf("\n File read error at line %d",Ncount+Ycount+1);
+            printf("\n Premature EOF");
+            printf("\n Press any key to continue"); getch();
+            go_byebye();
+            }
             abuffer[j]=ch; j++;
-	    }
-	 abuffer[j]='\0';
+         }
+      abuffer[j]='\0';
          /* printw("abuffer %s\n",abuffer); refresh();  */
          ptrthis->answer=(char *) malloc(strlen(abuffer)+1);
-         if(ptrthis->answer==NULL) 
+         if(ptrthis->answer==NULL)
            {
            disp_str(1,0,"malloc failed for answer: ",0);
-	   disp_str(1,28,abuffer,0); /* refresh(); */ getch(); go_byebye();
+	disp_str(1,28,abuffer,0); /* refresh(); */ getch(); go_byebye();
            }
          strncpy(ptrthis->answer,abuffer,strlen(abuffer));
          ptrthis->answer[j]='\0';
        /*  printw("answer %s\n",ptrthis->answer); refresh(); */
-	 if(ch!='}')while((ch=getc(fptr))!='}')
-	    {
-	    if (ch==EOF)
-	       {
-	       fclose(fptr);
-	       clrscr();
-	       printf("\n File read error at line %d",Ncount+Ycount+1);
-	       printf("\n Premature EOF");
-	       printf("\n Press any key to continue"); getch();
-	       go_byebye();
-	       }
-	    }
-	 Ncount++;
-	 ptrthis->ptrnext=(struct myflashcard *) malloc(sizeof(struct myflashcard));
+      if(ch!='}')while((ch=getc(fptr))!='}')
+         {
+	 if (ch==EOF)
+            {
+            fclose(fptr);
+            clrscr();
+            printf("\n File read error at line %d",Ncount+Ycount+1);
+            printf("\n Premature EOF");
+	    printf("\n Press any key to continue"); getch();
+            go_byebye();
+            }
+         }
+      Ncount++;
+      ptrthis->ptrnext=(struct myflashcard *) malloc(sizeof(struct myflashcard));
          if(!ptrthis->ptrnext)
-           {
+	   {
            disp_str(1,0,"Out of memory at card",0);
            fclose(fptr); getch(); return(2);
            }
          ptrthis->ptrnext->question=NULL; ptrthis->ptrnext->answer=NULL;
-	 if(ptrthis->ptrnext)
-	    {
-	    ptrthis->ptrprev = ptrtemp;
-	    ptrtemp = ptrthis;
-	    ptrthis = ptrthis->ptrnext;
-	    }
-	 else
-	    {
-	    disp_str(1,0,"Out of memory ",1); getch(); return(2);
-	    }
-	 }
-      else if (ptrthis->ans_stat == 'Y')
+      if(ptrthis->ptrnext)
 	 {
-	 while((ch=getc(fptr)) != '}' );
-	 Ycount++;
-	 }
+         ptrthis->ptrprev = ptrtemp;
+         ptrtemp = ptrthis;
+         ptrthis = ptrthis->ptrnext;
+         }
       else
-	 {
-	 fclose(fptr);
-	 clrscr();
-	 printf("\n File read error at line %d",Ncount+Ycount+1);
-	 printf("\n Press any key to continue"); getch();
-	 go_byebye();
-	 }
+         {
+	 disp_str(1,0,"Out of memory ",1); getch(); return(2);
+         }
+      }
+      else if (ptrthis->ans_stat == 'Y')
+      {
+      while((ch=getc(fptr)) != '}' );
+      Ycount++;
+      }
+      else
+      {
+      fclose(fptr);
+      clrscr();
+      printf("\n File read error at line %d",Ncount+Ycount+1);
+      printf("\n Press any key to continue"); getch();
+      go_byebye();
+      }
       } /* end while */
    if(Ncount==0)
       {
@@ -395,7 +366,7 @@ int rfile()
       if(ptrfirst->question) free(ptrfirst->question); ptrfirst->question=NULL;
       if(ptrfirst->answer) free(ptrfirst->answer); ptrfirst->answer=NULL;
       free(ptrfirst);
-      ptrthis=ptrfirst=NULL; 
+      ptrthis=ptrfirst=NULL;
       return(2);
       }
    else
@@ -424,17 +395,17 @@ void cntfile()
       filecnt.total++;
       if(usrid==(hexbuffer&usrid)) filecnt.correctFT++;
       while((ch=getc(fptr))!='}')
+      {
+      if (ch==EOF)
 	 {
-	 if (ch==EOF)
-	    {
-	    fclose(fptr);
-	    clrscr();
-	    printf("\n File read error at line %d",filecnt.total);
-	    printf("\n Premature EOF");
-	    printf("\n Press any key to continue"); getch();
-	    go_byebye();
-	    }
+         fclose(fptr);
+         clrscr();
+         printf("\n File read error at line %d",filecnt.total);
+         printf("\n Premature EOF");
+         printf("\n Press any key to continue"); getch();
+         go_byebye();
 	 }
+      }
       }
    fclose(fptr);
    }
@@ -451,11 +422,11 @@ void update_file()
    while(ptrthis)
       {
       if ((ptrthis->ans_stat=='Y') && (ptrthis->tries_session==1))
-	 {
-	 offset = ptrthis->disk_fptr;
-	 fseek(fptr, offset, 0);
-	 fprintf(fptr,"%2X",((ptrthis->usrstat)|usrid));
-	 }
+      {
+      offset = ptrthis->disk_fptr;
+      fseek(fptr, offset, 0);
+      fprintf(fptr,"%2X",((ptrthis->usrstat)|usrid));
+      }
       ptrthis = ptrthis->ptrnext;
       }
    fclose(fptr);
@@ -479,23 +450,23 @@ void myflash(int myflash_choice)
       get_rand_card(0);
       blanks(4,27,4,32,0); sprintf(strnum,"%d",ptrthis->tries_session); disp_str(4,27,strnum,0);
       if (myflash_choice == 0) multiple_choice();
-      else if (myflash_choice == 1) honor_system(); 
+      else if (myflash_choice == 1) honor_system();
       else typein_letter();
       if (ptrthis->ans_stat=='Y')
+      {
+      memcnt.correct++;
+      blanks(3,27,3,32,0); sprintf(strnum,"%d",memcnt.total-memcnt.correct); disp_str(3,27,strnum,0);
+      if (ptrthis->tries_session==1)
 	 {
-	 memcnt.correct++;
-	 blanks(3,27,3,32,0); sprintf(strnum,"%d",memcnt.total-memcnt.correct); disp_str(3,27,strnum,0);
-	 if (ptrthis->tries_session==1)
-	    {
-	    memcnt.correctFT++; filecnt.correctFT++;
-	    blanks(3,67,4,72,0);
-	    sprintf(strnum,"%d",filecnt.correctFT); disp_str(3,67,strnum,0);
-	    sprintf(strnum,"%d",filecnt.total-filecnt.correctFT); disp_str(4,67,strnum,0);
-	    score++;
-	    blanks(0,67,0,72,0);
-	    sprintf(strnum,"%d",score); disp_str(0,67,strnum,0);
-	    }
-	 }
+	 memcnt.correctFT++; filecnt.correctFT++;
+	 blanks(3,67,4,72,0);
+	 sprintf(strnum,"%d",filecnt.correctFT); disp_str(3,67,strnum,0);
+	 sprintf(strnum,"%d",filecnt.total-filecnt.correctFT); disp_str(4,67,strnum,0);
+	 score++;
+	 blanks(0,67,0,72,0);
+         sprintf(strnum,"%d",score); disp_str(0,67,strnum,0);
+         }
+      }
       }
    clr_scr(0);
 /* if (memcnt.total==memcnt.correct) */
@@ -504,17 +475,17 @@ void myflash(int myflash_choice)
 /*
       disp_str(10,26," ALL CARDS MATCHED FOR THIS SESSION ",1);
 */
-      if(myflash_choice==0) disp_str(12,31,"Multiple Choice",0); 
-      else if(myflash_choice==1) disp_str(12,31,"Honor System",0); 
-      else disp_str(12,31,"Pick a Letter",0);
+   if(myflash_choice==0) disp_str(12,31,"Multiple Choice",0);
+   else if(myflash_choice==1) disp_str(12,31,"Honor System",0);
+   else disp_str(12,31,"Pick a Letter",0);
 
-      disp_str(13,31,"Score: ",0); 
-      sprintf(strnum,"%d",score); disp_str(13,44,strnum,0);
-      score=100*score/memcnt.total;
-      disp_str(14,31,"Percentile: ",0);
-      sprintf(strnum,"%d",score); disp_str(14,44,strnum,0);
-      msg(5);getch();
-      clr_scr(0);
+   disp_str(13,31,"Score: ",0);
+   sprintf(strnum,"%d",score); disp_str(13,44,strnum,0);
+   score=100*score/memcnt.total;
+   disp_str(14,31,"Percentile: ",0);
+   sprintf(strnum,"%d",score); disp_str(14,44,strnum,0);
+   msg(5);getch();
+   clr_scr(0);
       }
    update_file();
    /* clear_cardmem(); */
@@ -538,19 +509,19 @@ void pick_multiple_choice()
    {
    int firstrow = 0;
    int lastrow = 6;
-   code = getcode(); 
+   code = getcode();
    switch (code)
       {
       case U_ARROW: disp_str(14+sel,0,testptr[sel]->answer,0);
-	   if( sel>firstrow ) --sel;
-	   else sel = lastrow;
-	   disp_str(14+sel,0,testptr[sel]->answer,1);
-	      break;
+        if( sel>firstrow ) --sel;
+        else sel = lastrow;
+        disp_str(14+sel,0,testptr[sel]->answer,1);
+           break;
       case D_ARROW: disp_str(14+sel,0,testptr[sel]->answer,0);
-	      if( sel<lastrow ) ++sel;
-	      else sel = firstrow;
-	   disp_str(14+sel,0,testptr[sel]->answer,1);
-	   break;
+           if( sel<lastrow ) ++sel;
+           else sel = firstrow;
+        disp_str(14+sel,0,testptr[sel]->answer,1);
+        break;
       case ENTER:   pick(sel); break;
       case ESC:     break;
       }
@@ -624,11 +595,7 @@ void get_rand_card(int rand_parm)
    int i = 0;
    int rand_num;
 
-#ifdef DOS
-   rand_num = random(memcnt.total);
-#else
    rand_num = rand() % memcnt.total;
-#endif
 
    ptrthis = ptrfirst;
    while(i < rand_num)
@@ -639,9 +606,9 @@ void get_rand_card(int rand_parm)
    while((ptrthis->ans_stat == 'Y') && (rand_parm == 0))
       {
       if(ptrthis->ptrnext)
-	 {
-	 ptrthis = ptrthis->ptrnext;
-	 }
+      {
+      ptrthis = ptrthis->ptrnext;
+      }
       else ptrthis = ptrfirst;
       }
    }
@@ -724,11 +691,11 @@ void clrfile()
    while( (fscanf(fptr1,"%x ",&hexbuffer)) != EOF)
       {
       if(usrid==(hexbuffer&usrid))
-	 {
-	 offset=ftell(fptr1)-3;
-	 fseek(fptr2,offset,0);
-	 fprintf(fptr2,"%2X",hexbuffer-usrid);
-	 }
+      {
+      offset=ftell(fptr1)-3;
+      fseek(fptr2,offset,0);
+      fprintf(fptr2,"%2X",hexbuffer-usrid);
+      }
       while(getc(fptr1)!='}');    /* get to next line */
       }
    filecnt.correctFT=0;
@@ -780,7 +747,7 @@ FILE *fptr; char sbuffer[80]; char ch;
 int found=0; int j=0; int uidexp=0; char username[25]; int done=0;
 if( (fptr=fopen("userlist.dta","a+"))==NULL ) /* create it if not here */
    {
-   printf("\nCan't open userlist.dta for append\n"); getch(); 
+   printf("\nCan't open userlist.dta for append\n"); getch();
    go_byebye();
    }
 else fclose(fptr);
@@ -818,17 +785,17 @@ while(!done)
    switch(ch)
       {
       case EOF:  if(j>0)  putc('\n',fptr);
-		 done=TRUE; break;
+           done=TRUE; break;
       case 26:   if(j>0)  putc('\n',fptr);
-		 done=TRUE; break;
+           done=TRUE; break;
       case '\n': j=0; uidexp++; break;
       default:   sbuffer[j++]=ch;
-		 if(j>79)
-		    {
-		    printf("\nError: name in user list too long");
+           if(j>79)
+              {
+              printf("\nError: name in user list too long");
                     go_byebye();
-		    }
-		 else sbuffer[j]='\0';
+              }
+           else sbuffer[j]='\0';
       }
    if(strncmp(sbuffer,username,24)==0) { found=1; done=TRUE; }
    if (uidexp>7) done=TRUE;

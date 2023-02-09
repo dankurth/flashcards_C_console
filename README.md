@@ -83,7 +83,15 @@ file to use when starting it up, eg "/home/p/kurth/flash mystudyfile.rec",
 but you must be in the same directory as the study files (I'll add directory 
 switching capablility later).
 
-This version was built using Borland C and gcc. 
-It runs in DOS or Linux (e.g. on DOSBox or Windows XP or Debian).
+The score shown reflects how many questions were answered correctly (the FIRST
+TIME) during this session. Questions answered wrong are not counted. Questions
+answered correctly after previous attempts also are not counted. The final 
+score reflects how many you would have gotten if you had been given only one 
+attempt at each question, just as in a test on paper. There is also a 
+percentage display, which is the score you would have received expressed as
+a percentile of total correct first time in session divided by total number
+of questions in the session.
+
+This version was built using MinGW (for Windows) and gcc (for Linux).
 Further details in docs folder.
 

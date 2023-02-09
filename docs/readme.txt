@@ -1,55 +1,19 @@
-I've made a study program called flash and made it available to anyone in
-"/home/p/kurth/pub/flash". To use it make and/or change to the directory 
-where you want to use it and do "cp /home/p/kurth/pub/flash/* ." (don't
-forget that little period on the end) and then type "flash" to run it. 
 
-I also have DOS and Linux versions which will work on an IBM compatible PC. 
-Just give me an empty formatted 3.5" diskette and I'll give it back to you
-with the program and some study files (including Spanish if you want it).
+The document FLASH.TXT is at least 27 years old (I wrote it in or before 1996) so while the description still applies the contact info is no longer valid. Will update it in any subsequent revisions.
 
-The program and study files are continually being improved or added to so 
-check the above directory for later versions of the program or additions 
-to the study files. You can use the study files provided but you can also
-design your own, which is the major reason I wrote the thing in the first 
-place.
+The original version from 1995 or earlier was written to run on DOS only, compiled using TurboC.
 
-The idea of the program is to have it show you flash cards and keep track
-of which ones you got right or wrong. Each time you start up the program
-you enter a new "session". The questions you are able to answer correctly
-THE FIRST TIME in that session are marked and are not repeated in that or
-future sessions. Other questions you get right after one or more 
-unsuccessful attempts will be repeated in future sessions until you get them
-right the first time in one of those sessions. Eventually when you've gotten
-them all right you can clear the marks to practice them again.
+The 1996 version ran on either DOS or Linux or Unix, compiled for DOS using Borland C++ 3.1.
 
-How do you answer the questions? Either by the "honor system" method or
-multiple choice. For "honor system" you press a key after being shown the
-question, then when you have mentally answered the question to yourself
-you press a key and are shown the correct answer, then YOU tell it if you
-got it correct or not and it marks it accordingly. All it does is keep track 
-of which ones you got right the first time, and thereafter tests you only 
-on the others, until you get them all right. It's not much, but it does help 
-make your self-quizzing a bit more automated and objective so you can tell 
-if you really DO remember the answers.
+This first 2023 version changes the 1996 version only insofar as it strips out the DOS specific code as builds for that code would not run on 64-bit Windows 10. Fortunately the streamlined code can now be cross-compiled as-is for Windows using MinGW.
 
- For multiple choice you are presented with a question and multiple answers
-taken at random from all the answers in the file. It works best for 
-questions and answers that are short, eg spanish/english cards. Not so
-helpful for our class.
+The program has been built and tested recently (Jan 2022) on DOSBox and a 32-bit XP on VirtualBox (both hosted on Linux), and then tested but not built on Windows 10.
 
-There are a couple of files that end in ".rec". Those are the study files
-and contain questions and answers. I've put one with the questions and
-anwsers from the actual economic botany quiz 2, also one I did of all 
-the study questions UP TO quiz 2. I'll be putting in more as we get them
-in class.
+There are screenshots in the docs folder. Screenshots include:
+Build on Linux (Debian 11)
+Build on Windows (virtual XP SP2 on VirtualBox 6.1.26 on Linux
+Run sequence on Linux (sequence according to time stamp in file names)
 
-I haven't filled in all the answers, and those that I did fill in you may 
-disagree with, so feel free to edit the file to suit your own preferences.
- To edit the file just make sure to make each line of the following form:
+Currently the program has options for multiple choice and for answering by typing in. These options are confusing on the display and require showing a screen to select options prior to study. At this point I think they're more annoying than helpful so will probably be removed in the next tagged version.
 
-00 yourquestion=youranswer}
-00 anotherquest=anotherans}
-
-....Dan (kurth@unix.ksu.edu) 
-home phone 539-6812
-
+Currently the program also has a few build warnings which will be cleaned up next.

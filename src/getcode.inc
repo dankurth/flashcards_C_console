@@ -1,14 +1,3 @@
-#ifdef DOS
-int getcode(void)
-{
-   int key;
-   key = getch();
-   while(key != 0 && key != 13 && key != 27)
-      key = getch();
-   if(key == 0) return( getch() );
-   else return( key );
-}
-#else
 int getcode(void)
 {
    int key;
@@ -20,5 +9,4 @@ int getcode(void)
    if((key==KEY_ENTER) || (key==10)) return(ENTER);
    if(key==113) return(ESC);
 }
-#endif
 
