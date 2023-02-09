@@ -1,6 +1,6 @@
-# flash
+                               FLASH
 
-![screenshot](docs/assets/images/runFlashOnDOSBox.png?raw=true)
+                           by Dan Kurth
 
 This program was developed as a study aid. It works like flash cards but
 with the added advantage that it keeps track of which cards you have
@@ -83,7 +83,14 @@ file to use when starting it up, eg "/home/p/kurth/flash mystudyfile.rec",
 but you must be in the same directory as the study files (I'll add directory 
 switching capablility later).
 
-This version was built using Borland C and gcc. 
-It runs in DOS or Linux (e.g. on DOSBox or Windows XP or Debian).
-Further details in docs folder.
+The score shown reflects how many questions were answered correctly (the FIRST
+TIME) during this session. Questions answered wrong are not counted. Questions
+answered correctly after previous attempts also are not counted. The final 
+score reflects how many you would have gotten if you had been given only one 
+attempt at each question, just as in a test on paper. There is also a 
+percentage display, which is the score you would have received expressed as
+a percentile of total correct first time in session divided by total number
+of questions in the session.
 
+kurth@unix.ksu.edu
+home phone 539-6812
