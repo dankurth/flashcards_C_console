@@ -21,9 +21,8 @@ You can select a data file to use by specifying it on the command line,
 for example "flash span-eng.rec" to use the data file "span-eng.rec". In
 the honor system you guess the answer & then after you are shown the
 right answer YOU tell the computer wether you guessed it correctly or
-not. In multiple choice you scroll up or down the given answers and hit
-enter to select the one you want. In "Pick a letter" you type in the
-letter corresponding to the correct one as shown in the answer, as in:
+not. In "Type in Answer" you type in the answer (e.g. a letter corresponding 
+to the correct one as in:
 
 what is the third planet from the sun?
 a. Venus
@@ -41,21 +40,18 @@ is probably an Ascii text file you can use.
 
 An example of a data file is illustrated below:
 
-00 question=answer} 
-30 2nd question=and 2nd answer
+ 0 question=answer} 
+ 1 2nd question=and 2nd answer
 this also is another answer for the second question
 and yet a 3rd part of the answer for the 2nd question} 
-0F yet another, the third question
+ 0 yet another, the third question
 having multiple parts a. & b. as follows:
 a. this is the A part
 b. this is the B part
 (there could be more)=and one more answer, say "a. this is the A part"}
 
-The above sample can be viewed using flash. Run "flash demo.rec" (without
-the quotation marks).
-
-The two digits preceding the question is a hex number. This number
-records the users who have answered the question correctly the first
+The digit preceding the question is a marker. This number
+records if users answered the question correctly the first
 time they encountered it in any given session. Following the first space
 is your first question, this is delimited by the "=" sign. Following the
 equal sign is the answer. Following the answer is the "}" sign, which signal
@@ -71,8 +67,11 @@ which case simply run it again specifying a lower maximum number of
 records per session.
 
 If you make a new data file or add cards to an existing file you need to
-put put 00 in front of the question, as in the first question & answer
-in the example above, eg "00 loco=crazy".
+put put " 0 " in front of the question, as in the first question & answer
+in the example above, eg " 0 loco=crazy}".
+
+A study file can be opened when starting flash by adding it as an
+argument on the command line, as in "flash demo.rec" (without the quotation marks).
 
 The program may reside in a separate directory, but MUST be started up
 in the same directory as your study files (you must change to the
@@ -92,6 +91,5 @@ percentage display, which is the score you would have received expressed as
 a percentile of total correct first time in session divided by total number
 of questions in the session.
 
-This version was built using MinGW (for Windows) and gcc (for Linux).
-Further details in docs folder.
+This version was built using MinGW (for Windows) and gcc (for Linux). 
 
