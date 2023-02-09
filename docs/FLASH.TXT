@@ -1,0 +1,60 @@
+              ษออออออออออออออออออออออออออออออออออออออออออออออออป
+              บ     ************    FLASH    ************      บ
+              บ                 by Dan Kurth                   บ
+              ศออออออออออออออออออออออออออออออออออออออออออออออออผ
+
+This program was developed as a study aid. It works like flash cards but with
+the added advantage that it keeps track of which cards you have problems with
+and shows only those cards. Cards that are answered correctly the first time
+are marked and are not shown again until cleared by the user. Those that are
+answered incorrectly are reshown at random until they are answered correctly,
+and they will reappear in new sessions until they are answered right the
+first time in any of those sessions.
+
+You can use the cards provided or you can make up your own to study anything
+that can be put on flash cards. When you miss a question you will be shown
+the correct answer. The computer will keep track of your progress and show
+you your score. In studying the cards you can use multiple choice or the
+honor system.
+
+You can select a data file to use by specifying it on the command line, for
+example "flash span-eng.rec" to use the data file "span-eng.rec". By default
+flash is set to multiple choice only. If you wish to enable the honor system
+option you must specify /h on the command line, eg. "flash span-eng.rec /h".
+In the honor system you guess the answer & then after you are shown the
+right answer YOU tell the computer wether you guessed it correctly or not.
+
+Any wordprocessor may be used to make a data file provided that it is capable
+of saving the file as an Ascii text file without hidden or special characters.
+If in doubt as to wether a file fits this description you can perform a TYPE
+command on it and if it does not beep or print strange characters which are
+not part of the alphabet then it is probably an Ascii text file you can use.
+
+An example of a data file is illustrated below:
+
+00 question=answer
+30 another question=and another answer
+0F yet another=and one more answer
+
+The two digits preceding the question is a hex number. This number records the
+users who have answered the question correctly the first time they encountered
+it in any given session. Following the first space is your first question,
+this is delimited by the "=" sign. Following the equal sign is the answer.
+Questions & answers are each limited in size to 79 characters.
+
+If you make a new data file or add cards to an existing file you need to put
+put 00 in front of the question, as in the first question & answer in the
+example above, eg "00 loco=crazy".
+
+
+                                        Dan Kurth
+                                        1435 Collins Ln, #136
+                                        Manhattan, KS. 66502
+                                        (913) 539-6812
+
+                                     or kurth@ksu.ksu.edu on Internet
+
+
+
+
+

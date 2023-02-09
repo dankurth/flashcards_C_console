@@ -1,0 +1,34 @@
+  Notes on flash program developments
+
+  Registration numbers will be composed of: the first letter of the persons
+last name, the date registered & time registered.
+  The date is important as it will indicate which changes are incorporated for
+the program.
+
+
+  11-11-91 Added _retpwd.c which checks command line argument and compares it
+to string encoded within flash.exe. If no match then performs _chksums.c to
+see if there have been any alterations to flash.exe or to flash.doc, if
+matches it does not check for alterations. This allows me to modify the
+program and run it without having to run _codesum.c to update the checksums
+thus making for faster & easier development of the program. The command line
+argument within flash.exe has been encoded using _encode.c to prevent others
+from using a command line argument to allow their own modifications. Garbage
+characters have also been put in the string array used by _retpwd.c for
+comparison to further confuse potential hackers, it is overwritten by the
+correct values which are decoded by _retpwd.c for comparison to the command
+line argument, the correct values also were selected at random and thus also
+even when decoded appear to be only garbage. Also added screen composed of
+first 5 lines of flash.doc which is displayed for approx. 7 seconds to show
+name of program, registered owner and registration number.
+
+15 Mar 92- I am going to call the flash projects fc2,fc3 etc. this way I can
+retain the preceding source files for each revision. In making the change from
+fc2 to fc3 I am going to drop the fixed length data file and use a sequential
+file instead. This should slow down read time but will take up a lot less space
+on disk. Also I am going to read/write in ascii so that the user can use a
+wordprocessor to edit cards, easier for them and smaller program for me since I
+don't have to include an editor. Maybe I'll write a tiny editor later to include
+as an option, but nowadays everyone will have some editor that they prefer to
+use to write in ascii.
+
