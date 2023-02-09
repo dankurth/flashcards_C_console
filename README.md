@@ -45,3 +45,5 @@ If you make a new data file or add cards to an existing file you need to put
 put 00 in front of the question, as in the first question & answer in the
 example above, eg "00 loco=crazy".
 
+This version was built using TurboC and runs only in DOS (e.g. on DOSBox or Windows XP).
+Further details and screenshots in the docs folder.
