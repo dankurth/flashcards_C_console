@@ -1,6 +1,6 @@
 # flash
 
-![screenshot](docs/assets/images/runFlashOnDOSBox.png.png?raw=true)
+![screenshot](docs/assets/images/runFlashOnDOSBox.png?raw=true)
 
 This program was developed as a study aid. It works like flash cards but with
 the added advantage that it keeps track of which cards you have problems with
