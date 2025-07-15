@@ -270,7 +270,7 @@ int rfile()
       return (2);
    }
    ptrthis = ptrfirst;
-   while ((fscanf(fptr, "%x ", &hexbuffer)) != EOF && Ncount < max_recs)
+   while ((fscanf(fptr, "%d", &hexbuffer)) != EOF && Ncount < max_recs)
    {
       ptrthis->usrstat = hexbuffer;
       if (usrid == (hexbuffer & usrid))
@@ -282,7 +282,7 @@ int rfile()
       if (ptrthis->ans_stat == 'N')
       {
          ptrthis->tries_session = 0;
-         ptrthis->disk_fptr = ftell(fptr) - 2;
+         ptrthis->disk_fptr = ftell(fptr) - 1;
          j = 0;
          while (((ch = getc(fptr)) != '=') && j < Q_SIZE) // cut off if too long
          {
@@ -440,7 +440,7 @@ void cntfile()
       getch();
       go_byebye();
    }
-   while ((fscanf(fptr, "%x ", &hexbuffer)) != EOF)
+   while ((fscanf(fptr, "%d ", &hexbuffer)) != EOF)
    {
       filecnt.total++;
       if (usrid == (hexbuffer & usrid))
@@ -485,7 +485,7 @@ void update_file()
       {
          offset = ptrthis->disk_fptr;
          fseek(fptr, offset, 0);
-         fprintf(fptr, "%x", ((ptrthis->usrstat) | usrid));
+         fprintf(fptr, "%d", ((ptrthis->usrstat) | usrid));
       }
       ptrthis = ptrthis->ptrnext;
    }
