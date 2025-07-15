@@ -282,7 +282,7 @@ int rfile()
       if (ptrthis->ans_stat == 'N')
       {
          ptrthis->tries_session = 0;
-         ptrthis->disk_fptr = ftell(fptr) - 3;
+         ptrthis->disk_fptr = ftell(fptr) - 2;
          j = 0;
          while (((ch = getc(fptr)) != '=') && j < Q_SIZE) // cut off if too long
          {
@@ -485,7 +485,7 @@ void update_file()
       {
          offset = ptrthis->disk_fptr;
          fseek(fptr, offset, 0);
-         fprintf(fptr, "%2X", ((ptrthis->usrstat) | usrid));
+         fprintf(fptr, "%x", ((ptrthis->usrstat) | usrid));
       }
       ptrthis = ptrthis->ptrnext;
    }
