@@ -729,7 +729,7 @@ void clrfile()
    while ((ch = fgetc(fptr1)) != EOF) // test here so don't write premature EOF
    {                                  // marker position is 2nd char of 1st line of question/answer set (Q&A)
       i++;                            // tracker for marker position
-      if (didDigit == 0 && i == 2)    // replace only once per Q&A
+      if (didDigit == 0 && i == 1)    // replace only once per Q&A
       {
          if (ch == '1') // marked as answered
          {
