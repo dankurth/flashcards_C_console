@@ -38,25 +38,30 @@ description you can perform a TYPE command on it and if it does not beep
 or print strange characters which are not part of the alphabet then it
 is probably an Ascii text file you can use.
 
-An example of a data file is illustrated below:
+An example of a data file with two questions is illustrated below:
 
- 0 question=answer} 
- 1 2nd question=and 2nd answer
-this also is another answer for the second question
-and yet a 3rd part of the answer for the 2nd question} 
- 0 yet another, the third question
-having multiple parts a. & b. as follows:
-a. this is the A part
-b. this is the B part
-(there could be more)=and one more answer, say "a. this is the A part"}
+1 one (in Spanish)=uno} 
+1 you (plural, familiar, in Spanish):
+  a. tú
+  b. usted
+  c. vostros
+  d. vosotras
+  e. vos
+  =c}
+0 The original 13 colonies of the United States were=
+New Hampshire, Massachusetts, Rhode Island, Connecticut, New York, New Jersey, Pennsylvania, Delaware, Maryland, Virginia, North Carolina, South Carolina, and Georgia.}
+  
+The questions have only one right answer, "uno" for the first, "c" for
+the second, and "New Hampshire, Massachusetts, Rhode Island, Connecticut, New York, New Jersey, Pennsylvania, Delaware, Maryland, Virginia, North Carolina, South Carolina, and Georgia.". 
 
-The digit preceding the question is a marker. This number
-records if users answered the question correctly the first
-time they encountered it in any given session. Following the first space
-is your first question, this is delimited by the "=" sign. Following the
-equal sign is the answer. Following the answer is the "}" sign, which signal
-the end of that answer. As you see questions or answers may be on more than
-one line. Questions & answers are each limited in size to 480 characters.
+Questions can be quizzed using either the "honor system" where user is simply 
+asked if they got it right, or by user typing in answer. Obviously the first two questions work for either mode but the last is better suited to honor mode (the "type in answer" mode is dumb. It expects an EXACT match, including order and punctuation and any unusual characters such as accent marks or umlauts).
+
+The digit preceding the question is a marker. This number records if users 
+answered the question correctly the first time they encountered it in any 
+given session (1 if true, 0 if false).  Following the first space is your first question, delimited by the "=" sign. Following the equal sign is the answer. Following the answer is the "}" character, which signals the end of that answer. Questions and answers may span more than one line, and are each limited to 480 characters.
+
+Due to their usage here as delimiters the characters "=" and "}" cannot currently be used as part of the content of either questions or answers.
 
 You can specify the number of questions to work on per session by using
 the "-m" option, as in "flash -m 10" or "flash -m 1512".  The default is
@@ -67,8 +72,8 @@ which case simply run it again specifying a lower maximum number of
 records per session.
 
 If you make a new data file or add cards to an existing file you need to
-put put " 0 " in front of the question, as in the first question & answer
-in the example above, eg " 0 loco=crazy}".
+put put "0 " in front of the question, as in the first question & answer
+in the example above, eg "0 loco=crazy}".
 
 A study file can be opened when starting flash by adding it as an
 argument on the command line, as in "flash demo.rec" (without the quotation marks).
