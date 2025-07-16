@@ -630,7 +630,7 @@ void type_in_answer()
 
 void honor_system()
 {
-   sprintf(qbuffer, "%s?", ptrthis->question);
+   sprintf(qbuffer, "%s", ptrthis->question);
    disp_str(6, 0, qbuffer, 0);
    msg(3);
    getch();
@@ -648,7 +648,7 @@ void honor_system()
       break;
    case ESC:;
    }
-   blanks(6, 0, 23, 79, 0);
+   blanks(6, 0, 23, 99, 0);
    ptrthis->tries_session++;
 }
 
