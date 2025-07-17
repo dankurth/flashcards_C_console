@@ -16,7 +16,7 @@ dirp = opendir(".");  /* open dir, read a file name */
 if(!dirp) exit(0);                 /* error opening directory, no files */
 for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp))
   {
-  if(!strcmp(dp->d_name+strlen(dp->d_name)-4,".rec")) 
+  if(!strcmp(dp->d_name+strlen(dp->d_name)-4,".fsf")) 
     strcpy(filelist[j++],dp->d_name);
   } 
 closedir (dirp);
