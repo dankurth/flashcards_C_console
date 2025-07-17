@@ -219,10 +219,11 @@ void action()
       cntfile();
       break;
    case 1: // flash cards (show submenu)
-      clr_scr(0);
+/*      clr_scr(0);
       firstrow = 4;
       lastrow = 6;
-      pos = 4;
+      pos = 4; */
+      myflash(0);
       break;
    case 2: // clear statistics
       clrfile();
