@@ -31,9 +31,8 @@ An example of a data file with two questions is illustrated below:
   e. vos
   =c}
 0 The original 13 colonies of the United States were=
-New Hampshire, Massachusetts, Rhode Island, Connecticut, 
-New York, New Jersey, Pennsylvania, Delaware, Maryland, 
-Virginia, North Carolina, South Carolina, and Georgia.}
+New Hampshire, Massachusetts, Rhode Island, Connecticut, New York, New Jersey, Pennsylvania,
+Delaware, Maryland, Virginia, North Carolina, South Carolina, and Georgia.}
 ```
   
 The questions have only one right answer, "uno" for the first, "c" for the second, and "New Hampshire, Massachusetts, Rhode Island, Connecticut, New York, New Jersey, Pennsylvania, Delaware, Maryland, Virginia, North Carolina, South Carolina, and Georgia.". 
