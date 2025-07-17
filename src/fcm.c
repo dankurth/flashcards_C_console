@@ -283,6 +283,7 @@ int rfile()
       {
          ptrthis->tries_session = 0;
          ptrthis->disk_fptr = ftell(fptr) - 1;
+         getc(fptr); // move past space after initial digit
          j = 0;
          while (((ch = getc(fptr)) != '=') && j < Q_SIZE) // cut off if too long
          {
