@@ -630,13 +630,11 @@ void type_in_answer()
 
 void honor_system()
 {
-   sprintf(qbuffer, "%s", ptrthis->question);
-   disp_str(6, 0, qbuffer, 0);
+   disp_str(6, 0, ptrthis->question, 0);
    msg(3);
    getch();
-   int ax = 6 + count_char(qbuffer,'\n'); 
-   int ay = 2 + size_after_last_char(qbuffer,'\n');
-   disp_str(ax, ay, ptrthis->answer, 0);
+   blanks(6, 0, 23, 99, 0);
+   disp_str(6, 0, ptrthis->answer, 0);
    msg(4);
    code = getcode();
    switch (code)
