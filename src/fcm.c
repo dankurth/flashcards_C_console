@@ -543,24 +543,16 @@ void myflash(int myflash_choice)
       }
    }
    clr_scr(0);
-   if (TRUE)
-   {
-      if (myflash_choice == 0)
-         disp_str(12, 31, "Honor System", 0);
-      else
-         disp_str(12, 31, "Type in Answer", 0);
-
-      disp_str(13, 31, "Score: ", 0);
-      sprintf(strnum, "%d", score);
-      disp_str(13, 44, strnum, 0);
-      score = 100 * score / memcnt.total;
-      disp_str(14, 31, "Percentile: ", 0);
-      sprintf(strnum, "%d", score);
-      disp_str(14, 44, strnum, 0);
-      msg(5);
-      getch();
-      clr_scr(0);
-   }
+   disp_str(12, 31, "Score: ", 0);
+   sprintf(strnum, "%d", score);
+   disp_str(12, 44, strnum, 0);
+   score = 100 * score / memcnt.total;
+   disp_str(13, 31, "Percentile: ", 0);
+   sprintf(strnum, "%d", score);
+   disp_str(13, 44, strnum, 0);
+   msg(5);
+   getch();
+   clr_scr(0);
    update_file();
 }
 
