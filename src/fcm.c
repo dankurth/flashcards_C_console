@@ -3,7 +3,7 @@
 Examples of builds tested:
 On virtual (VirtualBox 6.1.26) Windows XP using MinGW version v10.0.0:
   gcc -I/MinGW/include/ncurses -o flash fcm.c -lncurses -L/MinGW/bin -static
-On Debian GNU/Linux 11 (bullseye):
+On Debian GNU/Linux:
   gcc -o flash fcm.c -I/usr/include/ncurses -lncurses -ltermcap
 */
 
@@ -40,12 +40,11 @@ void cntfile(void);                /* cnt right/wrong in whole file */
 int rfile(void);                   /* read data file into memory (some or all records)*/
 void update_file(void);            /* update disk record stats to match those in memory   */
 
-void myflash(int myflash_choice); /* show questions, prompt for answers & keep stats */
+void myflash(void);                /* show questions, prompt for answers & keep stats */
 void cnt_cards(void);
 void clear_cardmem(void);          /* clear all cards from memory */
 void get_rand_card(int rand_parm); /* get a card, any card */
 void honor_system(void);           /* user tells computer if answer was right */
-void type_in_answer(void);         /* user has to type in correct answer */
 void pick(int);                    /*                                */
 void disp_stats(void);             /* show session & file stats */
 void disp_stats_legend(void);      /* show legend for session & file stats */
@@ -100,10 +99,7 @@ char *str[] = {
     "select file     ", // main menu
     "flash cards     ",
     "clear statistics",
-    "quit            ", /* myflash choices menu */
-    "honor system    ",
-    "type in answer  ",
-    "return to main  ",
+    "quit            " 
 };
 
 int usrid;                    /* unique single bit number to mark file usrstat */
@@ -113,7 +109,7 @@ int lastrow = 3;              /* last row of str to display as menu */
 int pos = 0;                  /* which row of menu highlighted */
 int code;                     /* keyboard input */
 
-char strnum[7];
+char strnum[4];
 int max_recs = 100;
 int score = 0;
 int maxRow = 22; // will be modified once stdscr is initiated
@@ -199,10 +195,7 @@ void msg(int msgnum)
        "Enter questions and answers, To return to view/edit press <enter> w/out input ",
        "Picture answer to yourself, then press any key to see if you were right ",
        "Left Arrow=Answer was Wrong, Right Arrow=Answer was Right, Q=Quit ",
-       "Press any key to continue ",
-       "ENTER-Make Selection  Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ",
-       "Type in answer ",
-       "Press any key to continue, or q to quit ",
+       "Press any key to continue "
    };
 
    blanks(maxRow, 0, maxRow + 1, 79, 0);
@@ -218,28 +211,14 @@ void action()
       sel_datafile(&datafile[0]);
       cntfile();
       break;
-   case 1: // flash cards (show submenu)
-/*      clr_scr(0);
-      firstrow = 4;
-      lastrow = 6;
-      pos = 4; */
-      myflash(0);
+   case 1: // flash cards
+      myflash();
       break;
    case 2: // clear statistics
       clrfile();
       break;
    case 3: // quit program
       go_byebye();
-   case 4: // honor system
-      myflash(0);
-      break;
-   case 5: // type in answer
-      myflash(1);
-      break;
-   case 6: // to main menu
-      firstrow = 0;
-      lastrow = 3;
-      pos = 3;
    }
    clr_scr(0);
    msg(0);
@@ -494,7 +473,7 @@ void update_file()
    fclose(fptr);
 }
 
-void myflash(int myflash_choice)
+void myflash()
 {
    clr_scr(0);
    if (rfile() == 2)
@@ -516,10 +495,7 @@ void myflash(int myflash_choice)
       blanks(4, 27, 4, 32, 0);
       sprintf(strnum, "%d", ptrthis->tries_session);
       disp_str(4, 27, strnum, 0);
-      if (myflash_choice == 0)
-         honor_system();
-      else
-         type_in_answer();
+      honor_system();
       if (ptrthis->ans_stat == 'Y')
       {
          memcnt.correct++;
@@ -593,33 +569,6 @@ void get_rand_card(int rand_parm)
       else
          ptrthis = ptrfirst;
    }
-}
-
-void type_in_answer()
-{
-   blanks(6, 0, 23, 79, 0);
-
-   sprintf(qbuffer, "%s?", ptrthis->question);
-   disp_str(6, 0, qbuffer, 0);
-   msg(7);
-
-   char *response = (char *)malloc(50 + 1);
-   disp_str(14, 3, "your answer:", 0);
-   echo();
-   move(14, 16);
-   getstr(response);
-   noecho();
-
-   if (strcmp(ptrthis->answer, response) == 0)
-      ptrthis->ans_stat = 'Y';
-   else
-   {
-      disp_str(13, 0, "correct answer:", 0);
-      disp_str(13, 16, ptrthis->answer, 0);
-      msg(8);
-      code = getcode();
-   }
-   ptrthis->tries_session++;
 }
 
 void honor_system()
