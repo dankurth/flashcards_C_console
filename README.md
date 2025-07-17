@@ -26,7 +26,7 @@ An example of a data file with two questions is illustrated below:
 1 you (plural, familiar, in Spanish):
   a. tú
   b. usted
-  c. vostros
+  c. vosotros
   d. vosotras
   e. vos
   =c}
