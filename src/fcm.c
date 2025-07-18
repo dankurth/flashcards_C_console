@@ -194,7 +194,7 @@ void msg(int msgnum)
        "Q-Menu    INS-Add Card    DEL-Delete Card    -Prev    -Next   PgUp-Up 20    PgDn-Down 20    HOME-1st    END-Last ",
        "Enter questions and answers, To return to view/edit press <enter> w/out input ",
        "Picture answer to yourself, then press any key to see if you were right ",
-       "Left Arrow=Answer was Wrong, Right Arrow=Answer was Right, Q=Quit ",
+       "Up Arrow=Correct, Down Arrow=Wrong",
        "Press any key to continue "
    };
 
@@ -579,16 +579,20 @@ void honor_system()
    blanks(6, 0, 23, 99, 0);
    disp_str(6, 0, ptrthis->answer, 0);
    msg(4);
+   int validInput = 0;
+   do {
    code = getcode();
    switch (code)
    {
-   case L_ARROW:
+   case D_ARROW:
+      // ptrthis->ans_stat remains 'N'
+      validInput = 1;
       break;
-   case R_ARROW:
+   case U_ARROW:
       ptrthis->ans_stat = 'Y';
-      break;
-   case ESC:;
+      validInput = 1;
    }
+   } while (!validInput);
    blanks(6, 0, 23, 99, 0);
    ptrthis->tries_session++;
 }
