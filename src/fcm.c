@@ -192,7 +192,7 @@ void msg(int msgnum)
        "Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ENTER=Make Selection",
        "Q-Menu    INS-Add Card    DEL-Delete Card    -Prev    -Next   PgUp-Up 20    PgDn-Down 20    HOME-1st    END-Last ",
        "Enter questions and answers, To return to view/edit press <enter> w/out input ",
-       "Picture answer to yourself, then press any key to see if you were right ",
+       "Right Arrow=See Answer ",
        "Up Arrow=Correct, Down Arrow=Wrong",
        "Press any key to continue "};
 
@@ -573,11 +573,20 @@ void honor_system()
 {
    disp_str(6, 0, ptrthis->question, 0);
    msg(3);
-   getch();
+   int validInput = 0;
+   do
+   {
+      code = getcode();
+      switch (code)
+      {
+      case R_ARROW:
+         validInput = 1;
+      }
+   } while (!validInput);
    blanks(6, 0, 23, 99, 0);
    disp_str(6, 0, ptrthis->answer, 0);
    msg(4);
-   int validInput = 0;
+   validInput = 0;
    do
    {
       code = getcode();
