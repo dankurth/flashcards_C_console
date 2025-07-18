@@ -597,7 +597,6 @@ void honor_system()
       switch (code)
       {
       case D_ARROW: // got it wrong
-         ptrthis->tries_session++;
          validInput = 1;
          break;
       case U_ARROW: // got it right
@@ -605,6 +604,7 @@ void honor_system()
          validInput = 1;
       }
    } while (!validInput);
+   ptrthis->tries_session++;
    blanks(6, 0, 23, 99, 0); // clear answer
 }
 
