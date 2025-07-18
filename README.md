@@ -7,7 +7,7 @@ This program was developed as a study aid. It works like flash cards but with th
 Questions are quizzed using the "honor system" where user is simply asked if they got it right.
 You can use the cards provided or you can make your own. When you miss a question you will be shown the correct answer. The computer will keep track of your progress and show you your score.
 
-Any word editor may be used to make a data file provided that it is capable of saving the file as a text file without hidden or special characters.
+Although word editor may be used to make a data file provided that it is capable of saving the file as a text file without hidden or special characters, the data itself must be formatted as described in the example data file. To signify that the data in a text file is formatted as expected by the Flash program it is given the extension ".fsf", which stands for Flash Study File. Accordingly the Flash program will only look for or open files with the extension ".fsf".
 
 An example of a data file is illustrated below:
 
