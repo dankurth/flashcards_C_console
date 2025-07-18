@@ -192,8 +192,8 @@ void msg(int msgnum)
        "Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ENTER=Make Selection",
        "Q-Menu    INS-Add Card    DEL-Delete Card    -Prev    -Next   PgUp-Up 20    PgDn-Down 20    HOME-1st    END-Last ",
        "Enter questions and answers, To return to view/edit press <enter> w/out input ",
-       "Right Arrow=See Answer ",
-       "Up Arrow=Correct, Down Arrow=Wrong",
+       "Right Arrow=See Answer, ESC=Quit",
+       "Up Arrow=Got it Right!, Down Arrow=Nope, Got it Wrong", 
        "Press any key to continue "};
 
    blanks(maxRow, 0, maxRow + 1, 79, 0);
@@ -579,11 +579,15 @@ void honor_system()
       code = getcode();
       switch (code)
       {
-      case R_ARROW:
+      case R_ARROW: // show answer
          validInput = 1;
+         break;
+      case ESC: // quit without affecting stats
+         return;
       }
    } while (!validInput);
-   blanks(6, 0, 23, 99, 0);
+   blanks(6, 0, 23, 99, 0); // clear question
+
    disp_str(6, 0, ptrthis->answer, 0);
    msg(4);
    validInput = 0;
@@ -592,17 +596,16 @@ void honor_system()
       code = getcode();
       switch (code)
       {
-      case D_ARROW:
-         // ptrthis->ans_stat remains 'N'
+      case D_ARROW: // got it wrong
+         ptrthis->tries_session++;
          validInput = 1;
          break;
-      case U_ARROW:
+      case U_ARROW: // got it right
          ptrthis->ans_stat = 'Y';
          validInput = 1;
       }
    } while (!validInput);
-   blanks(6, 0, 23, 99, 0);
-   ptrthis->tries_session++;
+   blanks(6, 0, 23, 99, 0); // clear answer
 }
 
 // how many characters ch are in string str?
