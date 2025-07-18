@@ -99,8 +99,7 @@ char *str[] = {
     "select file     ", // main menu
     "flash cards     ",
     "clear statistics",
-    "quit            " 
-};
+    "quit            "};
 
 int usrid;                    /* unique single bit number to mark file usrstat */
 char datafile[13] = "NoName"; /* name of file to use as datafile */
@@ -195,8 +194,7 @@ void msg(int msgnum)
        "Enter questions and answers, To return to view/edit press <enter> w/out input ",
        "Picture answer to yourself, then press any key to see if you were right ",
        "Up Arrow=Correct, Down Arrow=Wrong",
-       "Press any key to continue "
-   };
+       "Press any key to continue "};
 
    blanks(maxRow, 0, maxRow + 1, 79, 0);
    disp_str(maxRow, 0, msgptr[msgnum], 0);
@@ -580,18 +578,19 @@ void honor_system()
    disp_str(6, 0, ptrthis->answer, 0);
    msg(4);
    int validInput = 0;
-   do {
-   code = getcode();
-   switch (code)
+   do
    {
-   case D_ARROW:
-      // ptrthis->ans_stat remains 'N'
-      validInput = 1;
-      break;
-   case U_ARROW:
-      ptrthis->ans_stat = 'Y';
-      validInput = 1;
-   }
+      code = getcode();
+      switch (code)
+      {
+      case D_ARROW:
+         // ptrthis->ans_stat remains 'N'
+         validInput = 1;
+         break;
+      case U_ARROW:
+         ptrthis->ans_stat = 'Y';
+         validInput = 1;
+      }
    } while (!validInput);
    blanks(6, 0, 23, 99, 0);
    ptrthis->tries_session++;
@@ -601,22 +600,23 @@ void honor_system()
 int count_char(char *str, char ch)
 {
    int count = 0;
-   for (int i=0; i<strlen(str); i++)
+   for (int i = 0; i < strlen(str); i++)
    {
-      if (ch==str[i]) count++;
+      if (ch == str[i])
+         count++;
    }
    return count;
 }
 
 // what is the size of the string str from end back to character ch (or back to start of str if no char ch)?
-int size_after_last_char(char *str, char ch) 
+int size_after_last_char(char *str, char ch)
 {
    int size = 0;
-   for (int i=strlen(str)-1; i>=0; i--)
+   for (int i = strlen(str) - 1; i >= 0; i--)
    {
-      if (ch==str[i]) break;
+      if (ch == str[i])
+         break;
       size++;
-
    }
    return size;
 }
@@ -662,7 +662,7 @@ void clrfile()
       getch();
       return;
    }
-   if ((fptr2 = fopen("flashtmp.txt", "w")) == NULL)  // TODO: generate and check filename first
+   if ((fptr2 = fopen("flashtmp.txt", "w")) == NULL) // TODO: generate and check filename first
    {
       printf("\nCan't open file for write\n");
       getch();
@@ -699,7 +699,7 @@ void clrfile()
    fclose(fptr1);
    fclose(fptr2);
    remove(datafile);
-   rename("flashtmp.txt",datafile);
+   rename("flashtmp.txt", datafile);
 }
 
 void clear_cardmem()
