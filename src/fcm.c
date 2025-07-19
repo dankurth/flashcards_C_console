@@ -110,7 +110,6 @@ int code;                     /* keyboard input */
 
 char strnum[4];
 int max_recs = 100;
-int score = 0;
 int maxRow = 22; // will be modified once stdscr is initiated
 
 int main(int argc, char *argv[])
@@ -192,8 +191,8 @@ void msg(int msgnum)
        "Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ENTER=Make Selection",
        "Q-Menu    INS-Add Card    DEL-Delete Card    -Prev    -Next   PgUp-Up 20    PgDn-Down 20    HOME-1st    END-Last ",
        "Enter questions and answers, To return to view/edit press <enter> w/out input ",
-       "Right Arrow=See Answer, ESC=Quit",
-       "Up Arrow=Got it Right!, Down Arrow=Nope, Got it Wrong", 
+       "Right Arrow=View Answer      ESC=Quit",
+       "Left Arrow=View Question     Up Arrow=Correct     Down Arrow=Wrong", 
        "Press any key to continue "};
 
    blanks(maxRow, 0, maxRow + 1, 79, 0);
@@ -476,7 +475,6 @@ void myflash()
    clr_scr(0);
    if (rfile() == 2)
       return;
-   score = 0;
    cnt_cards();
    if (memcnt.total == memcnt.correct)
    {
@@ -509,23 +507,9 @@ void myflash()
             disp_str(3, 67, strnum, 0);
             sprintf(strnum, "%d", filecnt.total - filecnt.correctFT);
             disp_str(4, 67, strnum, 0);
-            score++;
-            blanks(0, 67, 0, 72, 0);
-            sprintf(strnum, "%d", score);
-            disp_str(0, 67, strnum, 0);
          }
       }
    }
-   clr_scr(0);
-   disp_str(12, 31, "Score: ", 0);
-   sprintf(strnum, "%d", score);
-   disp_str(12, 44, strnum, 0);
-   score = 100 * score / memcnt.total;
-   disp_str(13, 31, "Percentile: ", 0);
-   sprintf(strnum, "%d", score);
-   disp_str(13, 44, strnum, 0);
-   msg(5);
-   getch();
    clr_scr(0);
    update_file();
 }
@@ -571,41 +555,48 @@ void get_rand_card(int rand_parm)
 
 void honor_system()
 {
-   disp_str(6, 0, ptrthis->question, 0);
-   msg(3);
-   int validInput = 0;
    do
    {
-      code = getcode();
-      switch (code)
+      disp_str(6, 0, ptrthis->question, 0);
+      msg(3);
+      int validInput = 0;
+      do
       {
-      case R_ARROW: // show answer
-         validInput = 1;
-         break;
-      case ESC: // quit without affecting stats
-         return;
-      }
-   } while (!validInput);
-   blanks(6, 0, 23, 99, 0); // clear question
+         code = getcode();
+         switch (code)
+         {
+         case R_ARROW: // show answer
+            validInput = 1;
+            break;
+         case ESC: // quit without affecting stats
+            return;
+         }
+      } while (!validInput);
+      blanks(6, 0, 23, 99, 0); // clear question
 
-   disp_str(6, 0, ptrthis->answer, 0);
-   msg(4);
-   validInput = 0;
-   do
-   {
-      code = getcode();
-      switch (code)
+      disp_str(6, 0, ptrthis->answer, 0);
+      msg(4);
+      validInput = 0;
+      do
       {
-      case D_ARROW: // got it wrong
-         validInput = 1;
-         break;
-      case U_ARROW: // got it right
-         ptrthis->ans_stat = 'Y';
-         validInput = 1;
-      }
-   } while (!validInput);
-   ptrthis->tries_session++;
-   blanks(6, 0, 23, 99, 0); // clear answer
+         code = getcode();
+         switch (code)
+         {
+         case D_ARROW: // got it wrong
+            ptrthis->tries_session++;
+            validInput = 1;
+            break;
+         case U_ARROW: // got it right
+            ptrthis->tries_session++;
+            ptrthis->ans_stat = 'Y';
+            validInput = 1;
+            break;
+         case L_ARROW:
+            validInput = 1;
+         }
+      } while (!validInput);
+      blanks(6, 0, 23, 99, 0); // clear answer
+   } while (code == L_ARROW);
 }
 
 // how many characters ch are in string str?
@@ -635,19 +626,16 @@ int size_after_last_char(char *str, char ch)
 
 void disp_stats_legend()
 {
-   disp_str(0, 40, "Score this session:", 0);
    disp_str(2, 0, "Total cards this session:", 0);
    disp_str(3, 0, "Remaining this session:", 0);
    disp_str(4, 0, "Times tried this session:", 0);
    disp_str(2, 40, "Total # of cards in file:", 0);
-   disp_str(3, 40, "Cards marked as correct:", 0);
-   disp_str(4, 40, "Cards not marked:", 0);
+   disp_str(3, 40, "Cards correct first time:", 0);
+   disp_str(4, 40, "Cards not yet learned:", 0);
 }
 
 void disp_stats()
 {
-   sprintf(strnum, "%d", score);
-   disp_str(0, 67, strnum, 0);
    sprintf(strnum, "%d", memcnt.total);
    disp_str(2, 27, strnum, 0);
    sprintf(strnum, "%d", memcnt.total - memcnt.correct);
