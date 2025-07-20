@@ -79,7 +79,6 @@ struct myflashcard
    char *question;
    char *answer;
    char ans_stat;
-   int usrstat;
    int tries_session;
    struct myflashcard *ptrprev;
    struct myflashcard *ptrnext;
@@ -108,7 +107,6 @@ char *str[] = {
     "clear statistics",
     "quit            "};
 
-int usrid;                    /* unique single bit number to mark file usrstat */
 char datafile[13] = "NoName"; /* name of file to use as datafile */
 int firstrow = 0;             /* first row of str to display as menu */
 int lastrow = 3;              /* last row of str to display as menu */
@@ -128,7 +126,6 @@ int main(int argc, char *argv[])
    noecho();
    keypad(stdscr, TRUE);
    leaveok(stdscr, TRUE);
-   usrid = 1;
    clr_scr(0);
    ptrfirst = ptrlast = NULL;
    cursor_off();
@@ -234,7 +231,7 @@ int rfile()
    FILE *fptr;
    int j = 0, Ncount = 0, Ycount = 0;
    char ch;
-   int hexbuffer;
+   int learned;
    ptrtemp = NULL;
    if ((fptr = fopen(datafile, "r")) == NULL)
    {
@@ -255,14 +252,11 @@ int rfile()
       return (2);
    }
    ptrthis = ptrfirst;
-   while ((fscanf(fptr, "%d", &hexbuffer)) != EOF && Ncount < max_recs)
+   while ((fscanf(fptr, "%d", &learned)) != EOF && Ncount < max_recs)
    {
-      ptrthis->usrstat = hexbuffer;
-      if (usrid == (hexbuffer & usrid))
+      if (learned)
          ptrthis->ans_stat = 'Y';
       else
-         ptrthis->ans_stat = 'N';
-      if (usrid == 0)
          ptrthis->ans_stat = 'N';
       if (ptrthis->ans_stat == 'N')
       {
@@ -415,7 +409,7 @@ void cntfile()
 {
    FILE *fptr;
    char ch;
-   int hexbuffer;
+   int learned;
 
    filecnt.correctFT = 0;
    filecnt.total = 0;
@@ -426,10 +420,10 @@ void cntfile()
       getch();
       go_byebye();
    }
-   while ((fscanf(fptr, "%d ", &hexbuffer)) != EOF)
+   while ((fscanf(fptr, "%d ", &learned)) != EOF)
    {
       filecnt.total++;
-      if (usrid == (hexbuffer & usrid))
+      if (learned)
          filecnt.correctFT++;
       while ((ch = getc(fptr)) != '}')
       {
@@ -471,7 +465,7 @@ void update_file()
       {
          offset = ptrthis->disk_fptr;
          fseek(fptr, offset, 0);
-         fprintf(fptr, "%d", ((ptrthis->usrstat) | usrid));
+         fprintf(fptr, "%d", 1);
       }
       ptrthis = ptrthis->ptrnext;
    }
