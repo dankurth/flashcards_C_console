@@ -4,7 +4,13 @@ Examples of builds tested:
 On virtual (VirtualBox 6.1.26) Windows XP using MinGW version v10.0.0:
   gcc -I/MinGW/include/ncurses -o flash fcm.c -lncurses -L/MinGW/bin -static
 On Debian GNU/Linux:
-  gcc -o flash fcm.c -I/usr/include/ncurses -lncurses -ltermcap
+  // gcc -o flash fcm.c -I/usr/include/ncurses -lncurses -ltermcap
+  // does not display characters such as Él properly using mvprintw
+
+  gcc -o flash fcm.c -I/usr/include/ncursesw/ncursesw -lncursesw -ltermcap
+  // displays characters such as Él properly using mvprintw, 
+  // even though still passing (char *) not (wchar_t *)
+  
 */
 
 #include <stdio.h>
@@ -15,6 +21,7 @@ On Debian GNU/Linux:
 
 #include <dirent.h>
 #include <curses.h>
+#include <locale.h>
 
 #include "cursor.inc"
 #include "clear.inc"
@@ -114,6 +121,7 @@ int maxRow = 22; // will be modified once stdscr is initiated
 
 int main(int argc, char *argv[])
 {
+   setlocale(LC_ALL, "");
    initscr();
    maxRow = getmaxy(stdscr) - 1;
    cbreak();
