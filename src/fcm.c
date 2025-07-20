@@ -638,8 +638,8 @@ void disp_stats_legend()
    disp_str(3, 0, "Remaining this session:", 0);
    disp_str(4, 0, "Times tried this session:", 0);
    disp_str(2, 40, "Total # of cards in file:", 0);
-   disp_str(3, 40, "Cards correct first time:", 0);
-   disp_str(4, 40, "Cards not yet learned:", 0);
+   disp_str(3, 40, "Got right the first time:", 0);
+   disp_str(4, 40, "Still need some practice:", 0);
 }
 
 void disp_stats()
