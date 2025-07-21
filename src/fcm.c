@@ -78,7 +78,7 @@ struct myflashcard
 {
    char *question;
    char *answer;
-   char ans_stat;
+   int answered_correctly;
    int tries_session;
    struct myflashcard *ptrprev;
    struct myflashcard *ptrnext;
@@ -254,11 +254,8 @@ int rfile()
    ptrthis = ptrfirst;
    while ((fscanf(fptr, "%d", &learned)) != EOF && Ncount < max_recs)
    {
-      if (learned)
-         ptrthis->ans_stat = 'Y';
-      else
-         ptrthis->ans_stat = 'N';
-      if (ptrthis->ans_stat == 'N')
+      ptrthis->answered_correctly = learned;
+      if (!ptrthis->answered_correctly)
       {
          ptrthis->tries_session = 0;
          ptrthis->disk_fptr = ftell(fptr) - 1;
@@ -362,7 +359,7 @@ int rfile()
             return (2);
          }
       }
-      else if (ptrthis->ans_stat == 'Y')
+      else if (ptrthis->answered_correctly)
       {
          while ((ch = getc(fptr)) != '}')
             ;
@@ -461,7 +458,7 @@ void update_file()
    ptrthis = ptrfirst;
    while (ptrthis)
    {
-      if ((ptrthis->ans_stat == 'Y') && (ptrthis->tries_session == 1))
+      if ((ptrthis->answered_correctly) && (ptrthis->tries_session == 1))
       {
          offset = ptrthis->disk_fptr;
          fseek(fptr, offset, 0);
@@ -494,7 +491,7 @@ void myflash()
       sprintf(strnum, "%d", ptrthis->tries_session);
       disp_str(4, 27, strnum, 0);
       honor_system();
-      if (ptrthis->ans_stat == 'Y')
+      if (ptrthis->answered_correctly)
       {
          memcnt.correct++;
          blanks(3, 27, 3, 32, 0);
@@ -524,7 +521,7 @@ void cnt_cards()
    while (ptrthis)
    {
       memcnt.total++;
-      if (ptrthis->ans_stat == 'Y')
+      if (ptrthis->answered_correctly)
          memcnt.correct++;
       ptrthis = ptrthis->ptrnext;
    }
@@ -544,7 +541,7 @@ void get_rand_card(int rand_parm)
       ptrthis = ptrthis->ptrnext;
       i++;
    }
-   while ((ptrthis->ans_stat == 'Y') && (rand_parm == 0))
+   while ((ptrthis->answered_correctly) && (rand_parm == 0))
    {
       if (ptrthis->ptrnext)
       {
@@ -590,7 +587,7 @@ void honor_system()
             break;
          case U_ARROW: // got it right
             ptrthis->tries_session++;
-            ptrthis->ans_stat = 'Y';
+            ptrthis->answered_correctly = 1;
             validInput = 1;
             break;
          case L_ARROW:
