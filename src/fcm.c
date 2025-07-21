@@ -85,8 +85,6 @@ struct myflashcard
    long int disk_fptr;
 };
 struct myflashcard *ptrfirst, *ptrthis, *ptrnew, *ptrlast, *ptrtemp;
-struct myflashcard *store();
-struct myflashcard *testptr[10];
 
 struct
 {
