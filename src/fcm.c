@@ -23,7 +23,6 @@ On Debian GNU/Linux:
 #include <curses.h>
 #include <locale.h>
 
-#include "cursor.inc"
 #include "clear.inc"
 #include "disp-str.inc"
 #include "box.inc"
@@ -33,9 +32,6 @@ On Debian GNU/Linux:
 #include "byebye.inc"
 
 /* C routines */
-void cursor_off(void); /* turn cursor off */
-void cursor_on(void);  /* turn cursor on  */
-
 void disp_menu(void); /* display menu to user */
 void msg(int msgnum); /* display messages to user  */
 int getcode(void);    /* get response from user  */
@@ -126,7 +122,7 @@ int main(int argc, char *argv[])
    leaveok(stdscr, TRUE);
    clr_scr(0);
    ptrfirst = ptrlast = NULL;
-   cursor_off();
+   curs_set(0); // turn that annoying blinking cursor off for the duration
    if (argc > 1)
    {
       strcpy(datafile, argv[1]); // file name to use
