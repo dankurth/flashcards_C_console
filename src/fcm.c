@@ -8,9 +8,9 @@ On Debian GNU/Linux:
   // does not display characters such as Él properly using mvprintw
 
   gcc -o flash fcm.c -I/usr/include/ncursesw/ncursesw -lncursesw -ltermcap
-  // displays characters such as Él properly using mvprintw, 
+  // displays characters such as Él properly using mvprintw,
   // even though still passing (char *) not (wchar_t *)
-  
+
 */
 
 #include <stdio.h>
@@ -41,7 +41,7 @@ void cntfile(void);                /* cnt right/wrong in whole file */
 int rfile(void);                   /* read data file into memory (some or all records)*/
 void update_file(void);            /* update disk record stats to match those in memory   */
 
-void myflash(void);                /* show questions, prompt for answers & keep stats */
+void myflash(void); /* show questions, prompt for answers & keep stats */
 void cnt_cards(void);
 void clear_cardmem(void);          /* clear all cards from memory */
 void get_rand_card(int rand_parm); /* get a card, any card */
@@ -188,7 +188,7 @@ void msg(int msgnum)
        "Q-Menu    INS-Add Card    DEL-Delete Card    -Prev    -Next   PgUp-Up 20    PgDn-Down 20    HOME-1st    END-Last ",
        "Enter questions and answers, To return to view/edit press <enter> w/out input ",
        "Right Arrow=View Answer      q=Quit",
-       "Left Arrow=View Question     Up Arrow=Correct     Down Arrow=Wrong", 
+       "Left Arrow=View Question     Up Arrow=Correct     Down Arrow=Wrong",
        "Press any key to continue "};
 
    blanks(maxRow, 0, maxRow + 1, 79, 0);

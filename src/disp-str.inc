@@ -1,18 +1,18 @@
 
-void disp_str(int row,int column,char strtext[],int attrib)
+void disp_str(int row, int column, char strtext[], int attrib)
 {
-if(attrib==1) 
+  if (attrib == 1)
   {
-  standout();
-/*  mvaddstr(row,column,strtext); */
-  mvprintw(row,column,"%s",strtext); 
-  standend();
+    standout();
+    /*  mvaddstr(row,column,strtext); */
+    mvprintw(row, column, "%s", strtext);
+    standend();
   }
-else 
+  else
   {
-/*  mvaddstr(row,column,strtext); */
-  mvprintw(row,column,"%s",strtext); 
+    /*  mvaddstr(row,column,strtext); */
+    mvprintw(row, column, "%s", strtext);
   }
-move(23,79); 
-refresh(); 
+  move(23, 79);
+  refresh();
 }
