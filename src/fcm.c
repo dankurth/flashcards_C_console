@@ -25,7 +25,6 @@ On Debian GNU/Linux:
 
 #include "clear.inc"
 #include "disp-str.inc"
-#include "box.inc"
 #include "blank.inc"
 #include "sel-file.inc"
 #include "byebye.inc"
@@ -62,7 +61,6 @@ void clrscr()
 void clr_scr(int attribute);
 void disp_str(int row, int column, char strtext[], int attrib);
 void blanks(int row1, int column1, int row2, int column2, int attribute);
-void draw_box(unsigned char row1, unsigned char column1, unsigned char row2, unsigned char column2, unsigned char attribute);
 
 char qbuffer[Q_SIZE];
 char abuffer[A_SIZE];
@@ -137,7 +135,6 @@ int main(int argc, char *argv[])
       disp_str(0, 48, "Data File:", 0);
       disp_str(0, 59, datafile, 1);
       disp_menu();
-      draw_box(2, 47, lastrow - firstrow + 4, 78, 0);
       do
       {
          code = getch();
