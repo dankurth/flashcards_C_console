@@ -23,7 +23,6 @@ On Debian GNU/Linux:
 #include <curses.h>
 #include <locale.h>
 
-#include "clear.inc"
 #include "disp-str.inc"
 #include "blank.inc"
 #include "sel-file.inc"
@@ -58,7 +57,6 @@ void clrscr()
    clear();
    refresh();
 }
-void clr_scr(int attribute);
 void disp_str(int row, int column, char strtext[], int attrib);
 void blanks(int row1, int column1, int row2, int column2, int attribute);
 
@@ -115,7 +113,7 @@ int main(int argc, char *argv[])
    noecho();
    keypad(stdscr, TRUE);
    leaveok(stdscr, TRUE);
-   clr_scr(0);
+   clrscr();
    ptrfirst = ptrlast = NULL;
    curs_set(0); // turn that annoying blinking cursor off for the duration
    if (argc > 1)
@@ -197,7 +195,7 @@ void action()
    switch (pos)
    {
    case 0: // select file
-      clr_scr(0);
+      clrscr();
       sel_datafile(&datafile[0]);
       cntfile();
       break;
@@ -210,7 +208,7 @@ void action()
    case 3: // quit program
       go_byebye();
    }
-   clr_scr(0);
+   clrscr();
    msg(0);
 }
 
@@ -459,7 +457,7 @@ void update_file()
 
 void myflash()
 {
-   clr_scr(0);
+   clrscr();
    if (rfile() == 2)
       return;
    cnt_cards();
@@ -497,7 +495,7 @@ void myflash()
          }
       }
    }
-   clr_scr(0);
+   clrscr();
    update_file();
 }
 
