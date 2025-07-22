@@ -3,6 +3,8 @@ int code;
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
+#include <curses.h>
+
 
 void sel_datafile(char *datafile) 
 {
@@ -25,22 +27,22 @@ for (k=0; k<=j; k++) disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
 k=0; disp_str(0,0,filelist[k],1);
 do
   {
-  code = getcode();
+  code = getch();
   switch (code)
     {
-    case U_ARROW: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
+    case KEY_UP: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
     if( k>0 ) --k;
     else k=j; disp_str(k-20*(k/20),(k/20)*15,filelist[k],1);
     break;
-    case D_ARROW: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
+    case KEY_DOWN: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
       if( k<j ) ++k;
       else k = 0; disp_str(k-20*(k/20),(k/20)*15,filelist[k],1);
 	      break;
-	 case L_ARROW: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
+	 case KEY_LEFT: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
 	   if( k>=20 ) k-=20;
 	   disp_str(k-20*(k/20),(k/20)*15,filelist[k],1);
 	   break;
-	 case R_ARROW: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
+	 case KEY_RIGHT: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
 	   if( k+20<=j ) k+=20;
 	   disp_str(k-20*(k/20),(k/20)*15,filelist[k],1);
 	      break;

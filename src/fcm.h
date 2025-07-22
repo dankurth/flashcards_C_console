@@ -2,12 +2,12 @@
 #define Q_SIZE 480
 #define A_SIZE 480
 #define NUM_RECS 300
-#define U_ARROW 72
-#define D_ARROW 80
-#define L_ARROW 75
-#define R_ARROW 77
-#define ENTER 13
-#define ESC 27
+// #define U_ARROW 72
+// #define D_ARROW 80
+// #define L_ARROW 75
+// #define R_ARROW 77
+#define ENTER 10 // Enter
+#define QUIT 113 // q 
 
 #define PG_UP 73
 #define PG_DOWN 81

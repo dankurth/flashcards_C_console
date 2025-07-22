@@ -27,14 +27,12 @@ On Debian GNU/Linux:
 #include "disp-str.inc"
 #include "box.inc"
 #include "blank.inc"
-#include "getcode.inc"
 #include "sel-file.inc"
 #include "byebye.inc"
 
 /* C routines */
 void disp_menu(void); /* display menu to user */
 void msg(int msgnum); /* display messages to user  */
-int getcode(void);    /* get response from user  */
 void action(void);    /* initiate action corresponding to request by user*/
 
 void sel_datafile(char *datafile); /* choose a file to use for session */
@@ -52,7 +50,6 @@ void pick(int);                    /*                                */
 void disp_stats(void);             /* show session & file stats */
 void disp_stats_legend(void);      /* show legend for session & file stats */
 void go_byebye(void);              /* clear screen, cleanup unix curses stuff */
-int getcode(void);                 /* returns an integer for key pressed */
 
 int count_char(char *str, char ch);
 int size_after_last_char(char *str, char ch);
@@ -143,10 +140,10 @@ int main(int argc, char *argv[])
       draw_box(2, 47, lastrow - firstrow + 4, 78, 0);
       do
       {
-         code = getcode();
+         code = getch();
          switch (code)
          {
-         case U_ARROW:
+         case KEY_UP:
             disp_str(pos - firstrow + ver_offset, hor_offset, str[pos], 0);
             if (pos > firstrow)
                --pos;
@@ -154,7 +151,7 @@ int main(int argc, char *argv[])
                pos = lastrow;
             disp_str(pos - firstrow + ver_offset, hor_offset, str[pos], 1);
             break;
-         case D_ARROW:
+         case KEY_DOWN:
             disp_str(pos - firstrow + ver_offset, hor_offset, str[pos], 0);
             if (pos < lastrow)
                ++pos;
@@ -190,7 +187,7 @@ void msg(int msgnum)
        "Up-Arrow=Scroll Up  Down-Arrow=Scroll Down ENTER=Make Selection",
        "Q-Menu    INS-Add Card    DEL-Delete Card    -Prev    -Next   PgUp-Up 20    PgDn-Down 20    HOME-1st    END-Last ",
        "Enter questions and answers, To return to view/edit press <enter> w/out input ",
-       "Right Arrow=View Answer      ESC=Quit",
+       "Right Arrow=View Answer      q=Quit",
        "Left Arrow=View Question     Up Arrow=Correct     Down Arrow=Wrong", 
        "Press any key to continue "};
 
@@ -478,7 +475,7 @@ void myflash()
    }
    disp_stats_legend();
    disp_stats();
-   while ((memcnt.total > memcnt.correct) && (code != ESC))
+   while ((memcnt.total > memcnt.correct) && (code != QUIT))
    {
       get_rand_card(0);
       blanks(4, 27, 4, 32, 0);
@@ -555,13 +552,13 @@ void honor_system()
       int validInput = 0;
       do
       {
-         code = getcode();
+         code = getch();
          switch (code)
          {
-         case R_ARROW: // show answer
+         case KEY_RIGHT: // show answer
             validInput = 1;
             break;
-         case ESC: // quit without affecting stats
+         case QUIT: // quit without affecting stats
             return;
          }
       } while (!validInput);
@@ -572,24 +569,24 @@ void honor_system()
       validInput = 0;
       do
       {
-         code = getcode();
+         code = getch();
          switch (code)
          {
-         case D_ARROW: // got it wrong
+         case KEY_DOWN: // got it wrong
             ptrthis->tries_session++;
             validInput = 1;
             break;
-         case U_ARROW: // got it right
+         case KEY_UP: // got it right
             ptrthis->tries_session++;
             ptrthis->answered_correctly = 1;
             validInput = 1;
             break;
-         case L_ARROW:
+         case KEY_LEFT:
             validInput = 1;
          }
       } while (!validInput);
       blanks(6, 0, 23, 99, 0); // clear answer
-   } while (code == L_ARROW);
+   } while (code == KEY_LEFT);
 }
 
 // how many characters ch are in string str?
