@@ -32,11 +32,13 @@ do
     {
     case KEY_UP: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
     if( k>0 ) --k;
-    else k=j; disp_str(k-20*(k/20),(k/20)*15,filelist[k],1);
+    else k=j; 
+    disp_str(k-20*(k/20),(k/20)*15,filelist[k],1);
     break;
     case KEY_DOWN: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
       if( k<j ) ++k;
-      else k = 0; disp_str(k-20*(k/20),(k/20)*15,filelist[k],1);
+      else k = 0; 
+      disp_str(k-20*(k/20),(k/20)*15,filelist[k],1);
 	      break;
 	 case KEY_LEFT: disp_str(k-20*(k/20),(k/20)*15,filelist[k],0);
 	   if( k>=20 ) k-=20;
