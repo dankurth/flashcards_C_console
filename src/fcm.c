@@ -60,8 +60,8 @@ void clrscr()
 void disp_str(int row, int column, char strtext[], int attrib);
 void blanks(int row1, int column1, int row2, int column2, int attribute);
 
-char qbuffer[Q_SIZE];
-char abuffer[A_SIZE];
+char qbuffer[MAX_FIELD_LENGTH];
+char abuffer[MAX_FIELD_LENGTH];
 
 struct myflashcard
 {
@@ -215,10 +215,22 @@ void action()
 int rfile()
 {
    FILE *fptr;
-   int j = 0, Ncount = 0, Ycount = 0;
-   char ch;
-   int learned;
+   int Ncount = 0, Ycount = 0;
+   // char ch;
+   long int number = -1; // 0 if not yet learned, 1 if learned
    ptrtemp = NULL;
+
+   char *field = malloc(MAX_FIELD_LENGTH);
+   int field_index = 0;
+   int in_quotes = 0;
+   int ch;
+   int row = 1;
+   int column = 1;
+   // long int number;
+   long int line_file_start_position;
+   // char qbuffer[MAX_FIELD_LENGTH];
+   // char abuffer[MAX_FIELD_LENGTH];
+
    if ((fptr = fopen(datafile, "r")) == NULL)
    {
       disp_str(2, 0, "Can't open file", 0);
@@ -238,129 +250,146 @@ int rfile()
       return (2);
    }
    ptrthis = ptrfirst;
-   while ((fscanf(fptr, "%d", &learned)) != EOF && Ncount < max_recs)
+
+   while (((ch = fgetc(fptr)) != EOF) && (Ncount < max_recs))
    {
-      ptrthis->answered_correctly = learned;
-      if (!ptrthis->answered_correctly)
+      if (ch == '"')
       {
-         ptrthis->tries_session = 0;
-         ptrthis->disk_fptr = ftell(fptr) - 1;
-         getc(fptr); // move past space after initial digit
-         j = 0;
-         while (((ch = getc(fptr)) != '=') && j < Q_SIZE) // cut off if too long
-         {
-            if (ch == '\r')
-               continue; // skip to ignore CR in CRLF pairs from DOS file
-            qbuffer[j] = ch;
-            j++;
-         }
-         qbuffer[j] = '\0';
-         ptrthis->question = (char *)malloc(strlen(qbuffer) + 1);
-         if (ptrthis->question == NULL)
-         {
-            disp_str(1, 0, "malloc failed for question: ", 0);
-            disp_str(1, 28, qbuffer, 0); /* refresh(); */
-            getch();
-            go_byebye();
-         }
-         strncpy(ptrthis->question, qbuffer, strlen(qbuffer));
-         ptrthis->question[j] = '\0';
+         in_quotes = !in_quotes; // Toggle the in_quotes state
+         continue;
+      }
 
-         if (ch != '=')
-            while ((ch = getc(fptr)) != '=')
-               ; /* if cut off move past excess to the start of next read */
-
-         while (TRUE) /* skip spaces and & linefeeds & newlines preceding start of answer */
+      if (ch == ',' && !in_quotes)
+      {
+         field[field_index] = '\0'; // Null-terminate the field
+         switch (column)
          {
-            ch = getc(fptr);
-            if ((ch != '\r') && (ch != '\n') && (ch != ' '))
-               break; /* if linefeed or newline or space loop again */
-         }
-         ungetc(ch, fptr);
-
-         j = 0;
-         while (((ch = getc(fptr)) != '}') && j < A_SIZE)
-         {
-            if (ch == EOF)
+         case 1:
+            char *endptr = NULL;
+            number = strtol(field, &endptr, 10);
+            if (endptr == field)
             {
-               fclose(fptr);
-               clrscr();
-               printf("\n File read error at line %d", Ncount + Ycount + 1);
-               printf("\n Premature EOF");
-               printf("\n Press any key to continue");
+               printf("process error at row %d\n", row);
                getch();
-               go_byebye();
+               endwin();
+               exit(EXIT_FAILURE);
             }
-            if (ch == '\r')
-               continue; // skip to ignore CR in CRLF pairs from DOS file
-            abuffer[j] = ch;
-            j++;
+            line_file_start_position = ftell(fptr) - 1 - field_index;
+            break;
+         case 2:
+            strncpy(qbuffer, field, strlen(field));
+            qbuffer[strlen(field)] = '\0';
+            break;
+         default:
          }
-         abuffer[j] = '\0';
-         ptrthis->answer = (char *)malloc(strlen(abuffer) + 1);
-         if (ptrthis->answer == NULL)
+
+         column++;
+         field_index = 0; // Reset for the next field
+         continue;
+      }
+
+      // Handle newlines
+      if (ch == '\n')
+      {
+         if (in_quotes)
          {
-            disp_str(1, 0, "malloc failed for answer: ", 0);
-            disp_str(1, 28, abuffer, 0);
-            getch();
-            go_byebye();
-         }
-         strncpy(ptrthis->answer, abuffer, strlen(abuffer));
-         ptrthis->answer[j] = '\0';
-         if (ch != '}')
-            while ((ch = getc(fptr)) != '}')
-            {
-               if (ch == EOF)
-               {
-                  fclose(fptr);
-                  clrscr();
-                  printf("\n File read error at line %d", Ncount + Ycount + 1);
-                  printf("\n Premature EOF");
-                  printf("\n Press any key to continue");
-                  getch();
-                  go_byebye();
-               }
-            }
-         Ncount++;
-         ptrthis->ptrnext = (struct myflashcard *)malloc(sizeof(struct myflashcard));
-         if (!ptrthis->ptrnext)
-         {
-            disp_str(1, 0, "Out of memory at card", 0);
-            fclose(fptr);
-            getch();
-            return (2);
-         }
-         ptrthis->ptrnext->question = NULL;
-         ptrthis->ptrnext->answer = NULL;
-         if (ptrthis->ptrnext)
-         {
-            ptrthis->ptrprev = ptrtemp;
-            ptrtemp = ptrthis;
-            ptrthis = ptrthis->ptrnext;
+            // If we're inside quotes, treat newline as part of the field
+            if (field_index < MAX_FIELD_LENGTH - 1)
+               field[field_index++] = ch;
+            continue;
          }
          else
          {
-            disp_str(1, 0, "Out of memory ", 1);
-            getch();
-            return (2);
+            // End of line and not in quotes
+            if (field_index > 0)
+            {
+               field[field_index] = '\0'; // Null-terminate the last field
+               switch (column)
+               {
+               case 3:
+                  strncpy(abuffer, field, strlen(field));
+                  abuffer[strlen(field)] = '\0';
+                  break;
+               default:
+               }
+               if (number)
+                  Ycount++;
+               else
+               {
+                  ptrthis->answered_correctly = number;
+                  ptrthis->tries_session = 0;
+                  ptrthis->disk_fptr = line_file_start_position;
+
+                  ptrthis->question = (char *)malloc(strlen(qbuffer) + 1);
+                  if (ptrthis->question == NULL)
+                  {
+                     disp_str(1, 0, "malloc failed for question: ", 0);
+                     disp_str(1, 28, qbuffer, 0); /* refresh(); */
+                     getch();
+                     go_byebye();
+                  }
+                  strncpy(ptrthis->question, qbuffer, strlen(qbuffer));
+                  ptrthis->question[strlen(qbuffer)] = '\0';
+
+                  ptrthis->answer = (char *)malloc(strlen(abuffer) + 1);
+                  if (ptrthis->answer == NULL)
+                  {
+                     disp_str(1, 0, "malloc failed for answer: ", 0);
+                     disp_str(1, 28, abuffer, 0);
+                     getch();
+                     go_byebye();
+                  }
+                  strncpy(ptrthis->answer, abuffer, strlen(abuffer));
+                  ptrthis->answer[strlen(abuffer)] = '\0';
+
+                  Ncount++;
+                  ptrthis->ptrnext = (struct myflashcard *)malloc(sizeof(struct myflashcard));
+                  if (!ptrthis->ptrnext)
+                  {
+                     disp_str(1, 0, "Out of memory at card", 0);
+                     fclose(fptr);
+                     getch();
+                     return (2);
+                  }
+                  ptrthis->ptrnext->question = NULL;
+                  ptrthis->ptrnext->answer = NULL;
+                  if (ptrthis->ptrnext)
+                  {
+                     ptrthis->ptrprev = ptrtemp;
+                     ptrtemp = ptrthis;
+                     ptrthis = ptrthis->ptrnext;
+                  }
+                  else
+                  {
+                     disp_str(1, 0, "Out of memory ", 1);
+                     getch();
+                     return (2);
+                  }
+               }
+               row++;
+               column = 1;
+               field_index = 0; // Reset for the next field
+            }
          }
+         continue; // Continue to the next character
       }
-      else if (ptrthis->answered_correctly)
+
+      // Add character to the field
+      if (field_index < MAX_FIELD_LENGTH - 1)
       {
-         while ((ch = getc(fptr)) != '}')
-            ;
-         Ycount++;
+         field[field_index++] = ch; // Add character to the field
       }
-      else
-      {
-         fclose(fptr);
-         clrscr();
-         printf("\n File read error at line %d", Ncount + Ycount + 1);
-         printf("\n Press any key to continue");
-         getch();
-         go_byebye();
-      }
-   } /* end while */
+   }
+
+   // Handle the last field if it exists
+   if (field_index > 0)
+   {
+      field[field_index] = '\0'; // Null-terminate the last field
+      printf("Field: %s\n", field);
+   }
+
+   free(field);
+
    if (Ncount == 0)
    {
       disp_str(1, 1, "There were no unmatched cards in the file selected", 0);
@@ -391,8 +420,10 @@ int rfile()
 void cntfile()
 {
    FILE *fptr;
-   char ch;
-   int learned;
+   int in_quotes = 0;
+   int c; // current char
+   int column = 1;
+   int b; // prior char
 
    filecnt.correctFT = 0;
    filecnt.total = 0;
@@ -403,25 +434,39 @@ void cntfile()
       getch();
       go_byebye();
    }
-   while ((fscanf(fptr, "%d ", &learned)) != EOF)
+
+   while ((c = fgetc(fptr)) != EOF)
    {
-      filecnt.total++;
-      if (learned)
-         filecnt.correctFT++;
-      while ((ch = getc(fptr)) != '}')
+      if (c == '"')
       {
-         if (ch == EOF)
-         {
-            fclose(fptr);
-            clrscr();
-            printf("\n File read error at line %d", filecnt.total);
-            printf("\n Premature EOF");
-            printf("\n Press any key to continue");
-            getch();
-            go_byebye();
-         }
+         in_quotes = !in_quotes;
+         continue;
       }
+
+      if (c == ',' && !in_quotes)
+      {
+         if (column == 1)
+         {
+            if (b != '0')
+            {
+               filecnt.correctFT++;
+            }
+            filecnt.total++;
+         }
+         column++;
+         continue;
+      }
+
+      if (c == '\n')
+      {
+         if (!in_quotes)
+            column = 1;
+         continue;
+      }
+
+      b = c;
    }
+
    fclose(fptr);
 }
 
@@ -635,56 +680,54 @@ void disp_stats()
 
 void clrfile()
 {
-   FILE *fptr1;
-   FILE *fptr2;
-   char ch;
-   int didDigit;
-   int i;
 
-   if ((fptr1 = fopen(datafile, "r")) == NULL)
-   {
-      printf("\nCan't open file for read\n");
-      getch();
-      return;
-   }
-   if ((fptr2 = fopen("flashtmp.txt", "w")) == NULL) // TODO: generate and check filename first
-   {
-      printf("\nCan't open file for write\n");
-      getch();
-      return;
-   }
+   FILE *file = fopen(datafile, "r+");
+    if (!file)
+    {
+        perror("Unable to open file");
+        getch();
+        return;
+    }
 
-   didDigit = 0;
-   i = 0;
-   while ((ch = fgetc(fptr1)) != EOF) // test here so don't write premature EOF
-   {                                  // marker position is 2nd char of 1st line of question/answer set (Q&A)
-      i++;                            // tracker for marker position
-      if (didDigit == 0 && i == 1)    // replace only once per Q&A
-      {
-         if (ch == '1') // marked as answered
-         {
-            fputc('0', fptr2); // mark as not answered
-         }
-         else // anything else
-         {
-            fputc(ch, fptr2); // could be '0', or CR, or space, or ...
-         }
-         didDigit = 1; // we're now past the marker position
-      }
-      else // anything before or after marker position
-      {
-         fputc(ch, fptr2); // whatever it is put it in new file
-      }
-      if (ch == '\n')
-         i = 0; // end of line, not necessarily end of Q&A
-      if (ch == '}')
-         didDigit = 0; // end of Q&A
-   }
-   filecnt.correctFT = 0;
-   fclose(fptr1);
-   fclose(fptr2);
-   remove(datafile);
-   rename("flashtmp.txt", datafile);
+    int in_quotes = 0;
+    int c; // current char
+    int column = 1;
+    int b; // prior char
+
+    while ((c = fgetc(file)) != EOF)
+    {
+        if (c == '"')
+        {
+            in_quotes = !in_quotes;
+            continue;
+        }
+
+        if (c == ',' && !in_quotes)
+        {
+            if (column == 1 && b != '0')
+            {
+                long int current_position = ftell(file);
+                fseek(file, current_position - 2, 0);
+                fprintf(file, "%d", 0);
+                fseek(file, current_position, 0);
+            }
+            column++;
+            continue;
+        }
+
+        if (c == '\n')
+        {
+            if (!in_quotes)
+                column = 1;
+            continue;
+        }
+
+        b = c;
+    }
+
+    fclose(file);
+    filecnt.correctFT = 0;
+
 }
 
 void clear_cardmem()

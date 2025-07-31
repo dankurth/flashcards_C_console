@@ -4,6 +4,7 @@ int code;
 #include <stdio.h>
 #include <string.h>
 #include <curses.h>
+#include "fcm.h"
 
 void sel_datafile(char *datafile)
 {
@@ -18,7 +19,7 @@ void sel_datafile(char *datafile)
     exit(0); /* error opening directory, no files */
   for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp))
   {
-    if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".fsf"))
+    if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".csv"))
       strcpy(filelist[j++], dp->d_name);
   }
   closedir(dirp);
