@@ -370,6 +370,16 @@ int rfile()
                column = 1;
                field_index = 0; // Reset for the next field
             }
+            else
+            { // expected start of field content but got newline
+              // displays when select "flash cards" 
+               char buffer[100];
+               sprintf(buffer, "Error: row %d column %d of %s is empty", row, column, datafile);
+               char *msg = buffer;
+               disp_str(1, 0, msg, 1);
+               getch();
+               return 2;
+            }
          }
          continue; // Continue to the next character
       }
@@ -682,52 +692,51 @@ void clrfile()
 {
 
    FILE *file = fopen(datafile, "r+");
-    if (!file)
-    {
-        perror("Unable to open file");
-        getch();
-        return;
-    }
+   if (!file)
+   {
+      perror("Unable to open file");
+      getch();
+      return;
+   }
 
-    int in_quotes = 0;
-    int c; // current char
-    int column = 1;
-    int b; // prior char
+   int in_quotes = 0;
+   int c; // current char
+   int column = 1;
+   int b; // prior char
 
-    while ((c = fgetc(file)) != EOF)
-    {
-        if (c == '"')
-        {
-            in_quotes = !in_quotes;
-            continue;
-        }
+   while ((c = fgetc(file)) != EOF)
+   {
+      if (c == '"')
+      {
+         in_quotes = !in_quotes;
+         continue;
+      }
 
-        if (c == ',' && !in_quotes)
-        {
-            if (column == 1 && b != '0')
-            {
-                long int current_position = ftell(file);
-                fseek(file, current_position - 2, 0);
-                fprintf(file, "%d", 0);
-                fseek(file, current_position, 0);
-            }
-            column++;
-            continue;
-        }
+      if (c == ',' && !in_quotes)
+      {
+         if (column == 1 && b != '0')
+         {
+            long int current_position = ftell(file);
+            fseek(file, current_position - 2, 0);
+            fprintf(file, "%d", 0);
+            fseek(file, current_position, 0);
+         }
+         column++;
+         continue;
+      }
 
-        if (c == '\n')
-        {
-            if (!in_quotes)
-                column = 1;
-            continue;
-        }
+      if (c == '\n')
+      {
+         if (!in_quotes)
+            column = 1;
+         continue;
+      }
 
-        b = c;
-    }
+      b = c;
+   }
 
-    fclose(file);
-    filecnt.correctFT = 0;
-
+   fclose(file);
+   filecnt.correctFT = 0;
 }
 
 void clear_cardmem()
