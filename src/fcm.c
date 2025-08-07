@@ -23,10 +23,10 @@ On Debian GNU/Linux:
 #include <curses.h>
 #include <locale.h>
 
-#include "disp-str.inc"
-#include "blank.inc"
-#include "sel-file.inc"
-#include "byebye.inc"
+#include "disp-str.c"
+#include "blank.c"
+#include "sel-file.c"
+#include "byebye.c"
 
 /* C routines */
 void disp_menu(void); /* display menu to user */
@@ -94,7 +94,7 @@ char *str[] = {
     "clear statistics",
     "quit            "};
 
-char datafile[13] = "NoName"; /* name of file to use as datafile */
+char datafile[256] = "NoName"; /* name of file to use as datafile */
 int firstrow = 0;             /* first row of str to display as menu */
 int lastrow = 3;              /* last row of str to display as menu */
 int pos = 0;                  /* which row of menu highlighted */
@@ -373,8 +373,8 @@ int rfile()
             else
             { // expected start of field content but got newline
               // displays when select "flash cards" 
-               char buffer[100];
-               sprintf(buffer, "Error: row %d column %d of %s is empty", row, column, datafile);
+               char buffer[40];
+               sprintf(buffer, "Error: row %d column %d is empty", row, column);
                char *msg = buffer;
                disp_str(1, 0, msg, 1);
                getch();
