@@ -5,7 +5,8 @@
 #include <curses.h>
 #include "fcm.h"
 
-char fileList[30][MAX_FIELD_LENGTH]; // up to 30 filenames, need more?
+#define MAX_ROWS 30
+
 int lastRow = 15;                    // maximum screen row index to use, might use less
 int lastFile = 0;                    // fileList index for the last filename in it
 int t = 0;                           // top, index of filename shown in first row of screen
@@ -20,7 +21,7 @@ int s = 0;                           // selected row, index of row selected
  * The filename which is on the selected row (first row by default) is highlighted,
  * all others are shown in normal font.
  */
-void display_fileList(void)
+void display_fileList(char files[MAX_ROWS][MAX_FIELD_LENGTH])
 {
   clear();
   int i = t;
@@ -30,11 +31,11 @@ void display_fileList(void)
       break;
     if (row == s)
     {
-      disp_str(row, 0, fileList[i++], 1);
+      disp_str(row, 0, files[i++], 1);
     }
     else
     {
-      disp_str(row, 0, fileList[i++], 0);
+      disp_str(row, 0, files[i++], 0);
     }
   }
 }
@@ -44,6 +45,7 @@ void sel_datafile(char *datafile)
   int code;
   DIR *dirp;
   struct dirent *dp;
+  char fileList[MAX_ROWS][MAX_FIELD_LENGTH]; 
 
   dirp = opendir("."); /* open dir, read a file name */
   if (!dirp)
@@ -59,7 +61,7 @@ void sel_datafile(char *datafile)
     return; // no suitable files
   lastFile = i - 1;
 
-  display_fileList();
+  display_fileList(fileList);
 
   /** As user scrolls down list of displayed filenames each is highlighted in turn.
    * If user scrolls down below bottom row the list of displayed filenames is moved up by one
@@ -75,12 +77,12 @@ void sel_datafile(char *datafile)
       if (s > 0)
       {
         s--;
-        display_fileList();
+        display_fileList(fileList);
       }
       else if (t > 0)
       {
         t--;
-        display_fileList();
+        display_fileList(fileList);
       }
       break;
     case KEY_DOWN: // user pressed down arrow
@@ -90,7 +92,7 @@ void sel_datafile(char *datafile)
           s++;
         else
           t++;
-        display_fileList();
+        display_fileList(fileList);
       }
       break;
     case ENTER:
