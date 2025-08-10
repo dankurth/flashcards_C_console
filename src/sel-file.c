@@ -6,16 +6,24 @@
 #include "fcm.h"
 
 char fileList[30][MAX_FIELD_LENGTH]; // up to 30 filenames, need more?
-int lastRow = 15;                    // index of last row to display
-int lastFile = 0;                    // index of last file in fileList
-int t = 0;                           // top, index of item in fileList on visible on first row
-int s = 0;                           // selected, index of row to highlight
-int i = 0;                           // re-usable, general purpose
+int lastRow = 15;                    // maximum screen row index to use, might use less
+int lastFile = 0;                    // fileList index for the last filename in it
+int t = 0;                           // top, index of filename shown in first row of screen
+int s = 0;                           // selected row, index of row selected
 
+/**
+ * Displays subset of filenames from fileList in rows.
+ * Screen rows are as used by ncurses, numbered from top starting at zero.
+ * Filename at fileList[t] goes into first row (row[0]), fileList[t+1] into row[1],
+ * until either last row is filled or fileList has no more filenames,
+ * whichever comes first.
+ * The filename which is on the selected row (first row by default) is highlighted,
+ * all others are shown in normal font.
+ */
 void display_fileList(void)
 {
   clear();
-  i = t;
+  int i = t;
   for (int row = 0; row <= lastRow; row++)
   {
     if (i > lastFile)
@@ -40,6 +48,7 @@ void sel_datafile(char *datafile)
   dirp = opendir("."); /* open dir, read a file name */
   if (!dirp)
     exit(0); /* error opening directory, no files */
+  int i;
   for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp))
   {
     if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".csv"))
@@ -52,39 +61,42 @@ void sel_datafile(char *datafile)
 
   display_fileList();
 
+  /** As user scrolls down list of displayed filenames each is highlighted in turn.
+   * If user scrolls down below bottom row the list of displayed filenames is moved up by one
+   * to show and select next filename from fileList (at which point the first displayed filename
+   * is moved up and replaced by the next at top of screen in frrst row).
+   */
   do
   {
     code = getch();
     switch (code)
     {
-    case KEY_UP:
-      if (s == 0)
-      {
-        if (t > 0)
-          t--;
-      }
-      else
+    case KEY_UP: // user pressed up arrow
+      if (s > 0)
       {
         s--;
+        display_fileList();
       }
-      display_fileList();
+      else if (t > 0)
+      {
+        t--;
+        display_fileList();
+      }
       break;
-    case KEY_DOWN:
-      if (s == lastRow)
+    case KEY_DOWN: // user pressed down arrow
+      if (s < (lastFile - t))
       {
-        if (lastFile > (t + lastRow))
+        if (s < lastRow)
+          s++;
+        else
           t++;
+        display_fileList();
       }
-      else
-      {
-        s++;
-      }
-      display_fileList();
       break;
     case ENTER:
       break;
     }
   } while (code != ENTER);
 
-  strcpy(datafile, fileList[s]);
+  strcpy(datafile, fileList[s]); // use the filename selected
 }
