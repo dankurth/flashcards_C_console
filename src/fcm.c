@@ -68,7 +68,6 @@ struct myflashcard
    char *question;
    char *answer;
    int answered_correctly;
-   int tries_session;
    struct myflashcard *ptrprev;
    struct myflashcard *ptrnext;
    long int disk_fptr;
@@ -95,10 +94,10 @@ char *str[] = {
     "quit            "};
 
 char datafile[256] = "NoName"; /* name of file to use as datafile */
-int firstrow = 0;             /* first row of str to display as menu */
-int lastrow = 3;              /* last row of str to display as menu */
-int pos = 0;                  /* which row of menu highlighted */
-int code;                     /* keyboard input */
+int firstrow = 0;              /* first row of str to display as menu */
+int lastrow = 3;               /* last row of str to display as menu */
+int pos = 0;                   /* which row of menu highlighted */
+int code;                      /* keyboard input */
 
 char strnum[4];
 int max_recs = 100;
@@ -317,7 +316,6 @@ int rfile()
                else
                {
                   ptrthis->answered_correctly = number;
-                  ptrthis->tries_session = 0;
                   ptrthis->disk_fptr = line_file_start_position;
 
                   ptrthis->question = (char *)malloc(strlen(qbuffer) + 1);
@@ -372,7 +370,7 @@ int rfile()
             }
             else
             { // expected start of field content but got newline
-              // displays when select "flash cards" 
+              // displays when select "flash cards"
                char buffer[40];
                sprintf(buffer, "Error: row %d column %d is empty", row, column);
                char *msg = buffer;
@@ -499,11 +497,11 @@ void update_file()
    ptrthis = ptrfirst;
    while (ptrthis)
    {
-      if ((ptrthis->answered_correctly) && (ptrthis->tries_session == 1))
+      if (ptrthis->answered_correctly)
       {
          offset = ptrthis->disk_fptr;
          fseek(fptr, offset, 0);
-         fprintf(fptr, "%d", 1);
+         fprintf(fptr, "%d", 1); // mark as answered correctly
       }
       ptrthis = ptrthis->ptrnext;
    }
@@ -528,26 +526,17 @@ void myflash()
    while ((memcnt.total > memcnt.correct) && (code != QUIT))
    {
       get_rand_card(0);
-      blanks(4, 27, 4, 32, 0);
-      sprintf(strnum, "%d", ptrthis->tries_session);
-      disp_str(4, 27, strnum, 0);
       honor_system();
       if (ptrthis->answered_correctly)
       {
          memcnt.correct++;
-         blanks(3, 27, 3, 32, 0);
-         sprintf(strnum, "%d", memcnt.total - memcnt.correct);
-         disp_str(3, 27, strnum, 0);
-         if (ptrthis->tries_session == 1)
-         {
-            memcnt.correctFT++;
-            filecnt.correctFT++;
-            blanks(3, 67, 4, 72, 0);
-            sprintf(strnum, "%d", filecnt.correctFT);
-            disp_str(3, 67, strnum, 0);
-            sprintf(strnum, "%d", filecnt.total - filecnt.correctFT);
-            disp_str(4, 67, strnum, 0);
-         }
+         memcnt.correctFT++;
+         filecnt.correctFT++;
+         blanks(3, 56, 4, 72, 0);
+         sprintf(strnum, "%d", filecnt.correctFT);
+         disp_str(3, 56, strnum, 0);
+         sprintf(strnum, "%d", filecnt.total - filecnt.correctFT);
+         disp_str(4, 56, strnum, 0);
       }
    }
    clrscr();
@@ -623,11 +612,9 @@ void honor_system()
          switch (code)
          {
          case KEY_DOWN: // got it wrong
-            ptrthis->tries_session++;
             validInput = 1;
             break;
          case KEY_UP: // got it right
-            ptrthis->tries_session++;
             ptrthis->answered_correctly = 1;
             validInput = 1;
             break;
@@ -666,26 +653,19 @@ int size_after_last_char(char *str, char ch)
 
 void disp_stats_legend()
 {
-   disp_str(2, 0, "Total cards this session:", 0);
-   disp_str(3, 0, "Remaining this session:", 0);
-   disp_str(4, 0, "Times tried this session:", 0);
-   disp_str(2, 40, "Total # of cards in file:", 0);
-   disp_str(3, 40, "Got right the first time:", 0);
-   disp_str(4, 40, "Still need some practice:", 0);
+   disp_str(2, 40, "Cards in file:", 0);
+   disp_str(3, 40, "    Got Right:", 0);
+   disp_str(4, 40, "    Remaining:", 0);
 }
 
 void disp_stats()
 {
-   sprintf(strnum, "%d", memcnt.total);
-   disp_str(2, 27, strnum, 0);
-   sprintf(strnum, "%d", memcnt.total - memcnt.correct);
-   disp_str(3, 27, strnum, 0);
    sprintf(strnum, "%d", filecnt.total);
-   disp_str(2, 67, strnum, 0);
+   disp_str(2, 56, strnum, 0);
    sprintf(strnum, "%d", filecnt.correctFT);
-   disp_str(3, 67, strnum, 0);
+   disp_str(3, 56, strnum, 0);
    sprintf(strnum, "%d", filecnt.total - filecnt.correctFT);
-   disp_str(4, 67, strnum, 0);
+   disp_str(4, 56, strnum, 0);
 }
 
 void clrfile()
