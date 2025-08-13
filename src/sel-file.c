@@ -7,10 +7,10 @@
 
 #define MAX_ROWS 30
 
-int lastRow = 15;                    // maximum screen row index to use, might use less
-int lastFile = 0;                    // fileList index for the last filename in it
-int t = 0;                           // top, index of filename shown in first row of screen
-int s = 0;                           // selected row, index of row selected
+int lastRow = 15; // maximum screen row index to use, might use less
+int lastFile = 0; // fileList index for the last filename in it
+int t = 0;        // top, index of filename shown in first row of screen
+int s = 0;        // selected row, index of row selected
 
 /**
  * Displays subset of filenames from fileList in rows.
@@ -45,7 +45,7 @@ void sel_datafile(char *datafile)
   int code;
   DIR *dirp;
   struct dirent *dp;
-  char fileList[MAX_ROWS][MAX_FIELD_LENGTH]; 
+  char fileList[MAX_ROWS][MAX_FIELD_LENGTH];
 
   dirp = opendir("."); /* open dir, read a file name */
   if (!dirp)
@@ -53,6 +53,8 @@ void sel_datafile(char *datafile)
   int i;
   for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp))
   {
+    if (i == MAX_ROWS)
+      break;
     if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".csv"))
       strcpy(fileList[i++], dp->d_name);
   }
