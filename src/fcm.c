@@ -77,14 +77,13 @@ struct myflashcard *ptrfirst, *ptrthis, *ptrnew, *ptrlast, *ptrtemp;
 struct
 {
    int total;
-   int correctFT;
+   int correct;
 } filecnt;
 
 struct
 {
    int total;
    int correct;
-   int correctFT;
 } memcnt;
 
 char *str[] = {
@@ -195,7 +194,7 @@ void action()
    {
    case 0: // select file
       clrscr();
-      sel_datafile(&datafile[0]);
+      sel_datafile(datafile);
       cntfile();
       break;
    case 1: // flash cards
@@ -433,7 +432,7 @@ void cntfile()
    int column = 1;
    int b; // prior char
 
-   filecnt.correctFT = 0;
+   filecnt.correct = 0;
    filecnt.total = 0;
    if ((fptr = fopen(datafile, "r")) == NULL)
    {
@@ -457,7 +456,7 @@ void cntfile()
          {
             if (b != '0')
             {
-               filecnt.correctFT++;
+               filecnt.correct++;
             }
             filecnt.total++;
          }
@@ -530,12 +529,11 @@ void myflash()
       if (ptrthis->answered_correctly)
       {
          memcnt.correct++;
-         memcnt.correctFT++;
-         filecnt.correctFT++;
+         filecnt.correct++;
          blanks(3, 56, 4, 72, 0);
-         sprintf(strnum, "%d", filecnt.correctFT);
+         sprintf(strnum, "%d", filecnt.correct);
          disp_str(3, 56, strnum, 0);
-         sprintf(strnum, "%d", filecnt.total - filecnt.correctFT);
+         sprintf(strnum, "%d", filecnt.total - filecnt.correct);
          disp_str(4, 56, strnum, 0);
       }
    }
@@ -545,7 +543,7 @@ void myflash()
 
 void cnt_cards()
 {
-   memcnt.total = memcnt.correct = memcnt.correctFT = 0;
+   memcnt.total = memcnt.correct = 0;
    ptrtemp = ptrthis;
    ptrthis = ptrfirst;
    while (ptrthis)
@@ -662,9 +660,9 @@ void disp_stats()
 {
    sprintf(strnum, "%d", filecnt.total);
    disp_str(2, 56, strnum, 0);
-   sprintf(strnum, "%d", filecnt.correctFT);
+   sprintf(strnum, "%d", filecnt.correct);
    disp_str(3, 56, strnum, 0);
-   sprintf(strnum, "%d", filecnt.total - filecnt.correctFT);
+   sprintf(strnum, "%d", filecnt.total - filecnt.correct);
    disp_str(4, 56, strnum, 0);
 }
 
@@ -716,7 +714,7 @@ void clrfile()
    }
 
    fclose(file);
-   filecnt.correctFT = 0;
+   filecnt.correct = 0;
 }
 
 void clear_cardmem()
