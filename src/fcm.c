@@ -214,7 +214,6 @@ int rfile()
 {
    FILE *fptr;
    int Ncount = 0, Ycount = 0;
-   // char ch;
    long int number = -1; // 0 if not yet learned, 1 if learned
    ptrtemp = NULL;
 
@@ -224,10 +223,7 @@ int rfile()
    int ch;
    int row = 1;
    int column = 1;
-   // long int number;
    long int line_file_start_position;
-   // char qbuffer[MAX_FIELD_LENGTH];
-   // char abuffer[MAX_FIELD_LENGTH];
 
    if ((fptr = fopen(datafile, "r")) == NULL)
    {
@@ -236,7 +232,7 @@ int rfile()
       getch();
       return (2);
    }
-   clear_cardmem(); // test here, so can switch between options
+   clear_cardmem();
    ptrfirst = (struct myflashcard *)malloc(sizeof(struct myflashcard));
    ptrfirst->question = NULL;
    ptrfirst->answer = NULL;
