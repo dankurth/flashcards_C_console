@@ -49,9 +49,6 @@ void disp_stats(void);             /* show session & file stats */
 void disp_stats_legend(void);      /* show legend for session & file stats */
 void go_byebye(void);              /* clear screen, cleanup unix curses stuff */
 
-int count_char(char *str, char ch);
-int size_after_last_char(char *str, char ch);
-
 void clrscr()
 {
    clear();
@@ -420,6 +417,7 @@ int rfile()
    return (0);
 }
 
+// count total and correct within file
 void cntfile()
 {
    FILE *fptr;
@@ -508,7 +506,7 @@ void myflash()
    clrscr();
    if (rfile() == 2)
       return;
-   cnt_cards();
+   cnt_cards(); // count total and correct in memory
    if (memcnt.total == memcnt.correct)
    {
       disp_str(1, 0, "There are no unmatched cards in memory ", 1);
@@ -537,7 +535,7 @@ void myflash()
    update_file();
 }
 
-void cnt_cards()
+void cnt_cards() // count total and correct in memory
 {
    memcnt.total = memcnt.correct = 0;
    ptrtemp = ptrthis;
@@ -620,40 +618,15 @@ void honor_system()
    } while (code == KEY_LEFT);
 }
 
-// how many characters ch are in string str?
-int count_char(char *str, char ch)
-{
-   int count = 0;
-   for (int i = 0; i < strlen(str); i++)
-   {
-      if (ch == str[i])
-         count++;
-   }
-   return count;
-}
-
-// what is the size of the string str from end back to character ch (or back to start of str if no char ch)?
-int size_after_last_char(char *str, char ch)
-{
-   int size = 0;
-   for (int i = strlen(str) - 1; i >= 0; i--)
-   {
-      if (ch == str[i])
-         break;
-      size++;
-   }
-   return size;
-}
-
 void disp_stats_legend()
 {
-   disp_str(2, 40, "Cards in file:", 0);
-   disp_str(3, 40, "    Got Right:", 0);
+   disp_str(2, 40, "        Cards:", 0);  // # of cards IN FILE, detail user doesn't need to know
+   disp_str(3, 40, "      Correct:", 0);
    disp_str(4, 40, "    Remaining:", 0);
 }
 
-void disp_stats()
-{
+void disp_stats() // of cards in file, cards in memory are subset of those loaded for session
+{ 
    sprintf(strnum, "%d", filecnt.total);
    disp_str(2, 56, strnum, 0);
    sprintf(strnum, "%d", filecnt.correct);
