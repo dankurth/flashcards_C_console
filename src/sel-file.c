@@ -5,8 +5,6 @@
 #include <curses.h>
 #include "fcm.h"
 
-#define MAX_ROWS 30
-
 int lastRow = 15; // maximum screen row index to use, might use less
 int lastFile = 0; // fileList index for the last filename in it
 int t = 0;        // top, index of filename shown in first row of screen
@@ -21,7 +19,7 @@ int s = 0;        // selected row, index of row selected
  * The filename which is on the selected row (first row by default) is highlighted,
  * all others are shown in normal font.
  */
-void display_fileList(char files[MAX_ROWS][MAX_FIELD_LENGTH])
+void display_fileList(char **files)
 {
   clear();
   int i = t;
@@ -40,27 +38,43 @@ void display_fileList(char files[MAX_ROWS][MAX_FIELD_LENGTH])
   }
 }
 
-void sel_datafile(char *datafile)
+void sel_datafile(char datafile[])
 {
   int code;
   DIR *dirp;
   struct dirent *dp;
-  char fileList[MAX_ROWS][MAX_FIELD_LENGTH];
+  char **fileList;
+  int c;
 
   dirp = opendir("."); /* open dir, read a file name */
   if (!dirp)
-    exit(0); /* error opening directory, no files */
-  int i;
-  for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp))
+    return; /* error opening directory, no files */
+
+  c=0;
+  while ((dp = readdir(dirp)) != NULL)
   {
-    if (i == MAX_ROWS)
-      break;
     if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".csv"))
-      strcpy(fileList[i++], dp->d_name);
+      c++; // number of suitable files
   }
   closedir(dirp);
-  if (!i)
+  if (!c)
     return; // no suitable files
+  fileList = (char **)malloc(c * sizeof(char *));
+  if (fileList == NULL)
+    return; // failed to allocate
+
+  int i = 0;
+  dirp = opendir("."); // open dir again (how else would I reset dirp?)
+  while ((dp = readdir(dirp)) != NULL)
+  {
+    if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".csv"))
+    {
+      fileList[i] = (char *)malloc(((strlen(dp->d_name)) * sizeof(char)) + 1);
+      if (fileList[i] == NULL) return;
+      strcpy(fileList[i++], dp->d_name); // copy d_name including string terminator
+    }
+  }
+  closedir(dirp);
   lastFile = i - 1;
 
   display_fileList(fileList);
@@ -103,4 +117,10 @@ void sel_datafile(char *datafile)
   } while (code != ENTER);
 
   strcpy(datafile, fileList[s]); // use the filename selected
+
+  for (i=0; i<c; i++) 
+  {
+    free(fileList[i]);
+  }
+  free(fileList);
 }

@@ -33,7 +33,7 @@ void disp_menu(void); /* display menu to user */
 void msg(int msgnum); /* display messages to user  */
 void action(void);    /* initiate action corresponding to request by user*/
 
-void sel_datafile(char *datafile); /* choose a file to use for session */
+void sel_datafile(char datafile[]); /* choose a file to use for session */
 void clrfile(void);                /* clear stats/scores of disk data file */
 void cntfile(void);                /* cnt right/wrong in whole file */
 int rfile(void);                   /* read data file into memory (some or all records)*/
