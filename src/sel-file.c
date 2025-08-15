@@ -38,44 +38,68 @@ void display_fileList(char **files)
   }
 }
 
-void sel_datafile(char datafile[])
+void em(char *msg)
+{
+  clear();
+  // char buffer[40];
+  // sprintf(buffer, "Error test only: t %d s %d", t, s);
+  // char *msg = buffer;
+  disp_str(0, 1, msg, 0);
+  disp_str(2, 1, "Press any key to continue", 0);
+  getch();
+}
+
+int sel_datafile(char datafile[])
 {
   int code;
   DIR *dirp;
   struct dirent *dp;
   char **fileList;
-  int c;
+  int i;
 
   dirp = opendir("."); /* open dir, read a file name */
-  if (!dirp)
-    return; /* error opening directory, no files */
-
-  c=0;
+  if (dirp == NULL)
+  {
+    em("error opening directory");
+    return 1;
+  }
+  i = 0;
   while ((dp = readdir(dirp)) != NULL)
   {
     if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".csv"))
-      c++; // number of suitable files
+      i++;
   }
-  closedir(dirp);
-  if (!c)
-    return; // no suitable files
-  fileList = (char **)malloc(c * sizeof(char *));
-  if (fileList == NULL)
-    return; // failed to allocate
+  if (!i)
+  {
+    closedir(dirp);
+    em("no suitable files");
+    return 1;
+  }
+  fileList = (char **)malloc(i * sizeof(char *));
+  if (fileList == NULL) // failed to allocate
+  {
+    closedir(dirp);
+    em("malloc failure on fileList");
+    return 1;
+  }
 
-  int i = 0;
-  dirp = opendir("."); // open dir again (how else would I reset dirp?)
+  i = 0;
+  rewinddir(dirp);
   while ((dp = readdir(dirp)) != NULL)
   {
     if (!strcmp(dp->d_name + strlen(dp->d_name) - 4, ".csv"))
     {
       fileList[i] = (char *)malloc(((strlen(dp->d_name)) * sizeof(char)) + 1);
-      if (fileList[i] == NULL) return;
-      strcpy(fileList[i++], dp->d_name); // copy d_name including string terminator
+      if (fileList[i] == NULL)
+      {
+        em("malloc failure on item for fileList");
+        return 1;
+      }
+      strcpy(fileList[i], dp->d_name); // copy d_name including string terminator
+      lastFile = i++;
     }
   }
   closedir(dirp);
-  lastFile = i - 1;
 
   display_fileList(fileList);
 
@@ -118,9 +142,11 @@ void sel_datafile(char datafile[])
 
   strcpy(datafile, fileList[s]); // use the filename selected
 
-  for (i=0; i<c; i++) 
+  for (i = 0; i <= lastFile; i++)
   {
     free(fileList[i]);
   }
   free(fileList);
+
+  return 0;
 }

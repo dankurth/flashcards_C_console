@@ -33,7 +33,7 @@ void disp_menu(void); /* display menu to user */
 void msg(int msgnum); /* display messages to user  */
 void action(void);    /* initiate action corresponding to request by user*/
 
-void sel_datafile(char datafile[]); /* choose a file to use for session */
+int sel_datafile(char datafile[]); /* choose a file to use for session */
 void clrfile(void);                /* clear stats/scores of disk data file */
 void cntfile(void);                /* cnt right/wrong in whole file */
 int rfile(void);                   /* read data file into memory (some or all records)*/
@@ -191,8 +191,8 @@ void action()
    {
    case 0: // select file
       clrscr();
-      sel_datafile(datafile);
-      cntfile();
+      if (!sel_datafile(datafile)) // if no errors
+         cntfile();
       break;
    case 1: // flash cards
       myflash();
@@ -620,13 +620,13 @@ void honor_system()
 
 void disp_stats_legend()
 {
-   disp_str(2, 40, "        Cards:", 0);  // # of cards IN FILE, detail user doesn't need to know
+   disp_str(2, 40, "        Cards:", 0); // # of cards IN FILE, detail user doesn't need to know
    disp_str(3, 40, "      Correct:", 0);
    disp_str(4, 40, "    Remaining:", 0);
 }
 
 void disp_stats() // of cards in file, cards in memory are subset of those loaded for session
-{ 
+{
    sprintf(strnum, "%d", filecnt.total);
    disp_str(2, 56, strnum, 0);
    sprintf(strnum, "%d", filecnt.correct);
