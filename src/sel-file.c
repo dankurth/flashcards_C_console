@@ -38,12 +38,19 @@ void display_fileList(char **files)
   }
 }
 
-void em(char *msg)
+
+/**
+ * usage:
+ *   em("sample error"); return 1;
+ * or
+ *   char buffer[40];
+ *   sprintf(buffer, "sample error: i %d j %d", i, j);
+ *   char *msg = buffer;
+ *   em(msg); return 1;
+ */
+void em (char *msg)
 {
   clear();
-  // char buffer[40];
-  // sprintf(buffer, "Error test only: t %d s %d", t, s);
-  // char *msg = buffer;
   disp_str(0, 1, msg, 0);
   disp_str(2, 1, "Press any key to continue", 0);
   getch();

@@ -224,22 +224,19 @@ int rfile()
 
    if ((fptr = fopen(datafile, "r")) == NULL)
    {
-      disp_str(2, 0, "Can't open file", 0);
-      disp_str(2, 16, datafile, 0);
-      getch();
-      return (2);
+      em("Cannot open file");
+      return 2;
    }
    clear_cardmem();
    ptrfirst = (struct myflashcard *)malloc(sizeof(struct myflashcard));
+   if (ptrfirst == NULL)
+   {
+      fclose(fptr);
+      em("Out of memory at first card");
+      return 2;
+   }
    ptrfirst->question = NULL;
    ptrfirst->answer = NULL;
-   if (!ptrfirst)
-   {
-      disp_str(1, 0, "Out of memory at first card", 0);
-      fclose(fptr);
-      getch();
-      return (2);
-   }
    ptrthis = ptrfirst;
 
    while (((ch = fgetc(fptr)) != EOF) && (Ncount < max_recs))
@@ -260,10 +257,18 @@ int rfile()
             number = strtol(field, &endptr, 10);
             if (endptr == field)
             {
-               printf("process error at row %d\n", row);
-               getch();
+               char buffer[80];
+               sprintf(buffer, "Invalid number in col 1 row %d\n", row);
+               char *msg = buffer;
+               em(msg);
+
                endwin();
                exit(EXIT_FAILURE);
+
+               // free(field);
+               // clear_cardmem();
+
+               // return 2;
             }
             line_file_start_position = ftell(fptr) - 1 - field_index;
             break;
@@ -641,8 +646,7 @@ void clrfile()
    FILE *file = fopen(datafile, "r+");
    if (!file)
    {
-      perror("Unable to open file");
-      getch();
+      em("Unable to open file");
       return;
    }
 
@@ -690,7 +694,7 @@ void clear_cardmem()
 {
    while (ptrfirst)
    {
-      ptrthis = ptrfirst->ptrnext;
+         ptrthis = ptrfirst->ptrnext;
       if (ptrfirst->question)
          free(ptrfirst->question);
       ptrfirst->question = NULL;
@@ -698,6 +702,6 @@ void clear_cardmem()
          free(ptrfirst->answer);
       ptrfirst->answer = NULL;
       free(ptrfirst);
-      ptrfirst = ptrthis;
+         ptrfirst = ptrthis;
    }
 }
