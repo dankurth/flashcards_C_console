@@ -62,14 +62,15 @@ char abuffer[MAX_FIELD_LENGTH];
 
 struct myflashcard
 {
+   int answered_correctly;
    char *question;
    char *answer;
-   int answered_correctly;
-   struct myflashcard *ptrprev;
-   struct myflashcard *ptrnext;
    long int disk_fptr;
+   struct myflashcard *ptrnext;
 };
-struct myflashcard *ptrfirst, *ptrthis, *ptrnew, *ptrlast, *ptrtemp;
+struct myflashcard *ptrfirst = NULL;
+struct myflashcard *ptrthis = NULL;
+struct myflashcard *ptrtemp = NULL;
 
 struct
 {
@@ -109,7 +110,6 @@ int main(int argc, char *argv[])
    keypad(stdscr, TRUE);
    leaveok(stdscr, TRUE);
    clrscr();
-   ptrfirst = ptrlast = NULL;
    curs_set(0); // turn that annoying blinking cursor off for the duration
    if (argc > 1)
    {
@@ -237,6 +237,7 @@ int rfile()
    }
    ptrfirst->question = NULL;
    ptrfirst->answer = NULL;
+   ptrfirst->ptrnext = NULL;
    ptrthis = ptrfirst;
 
    while (((ch = fgetc(fptr)) != EOF) && (Ncount < max_recs))
@@ -261,14 +262,7 @@ int rfile()
                sprintf(buffer, "Invalid number in col 1 row %d\n", row);
                char *msg = buffer;
                em(msg);
-
-               endwin();
-               exit(EXIT_FAILURE);
-
-               // free(field);
-               // clear_cardmem();
-
-               // return 2;
+               return 2;
             }
             line_file_start_position = ftell(fptr) - 1 - field_index;
             break;
@@ -350,7 +344,6 @@ int rfile()
                   ptrthis->ptrnext->answer = NULL;
                   if (ptrthis->ptrnext)
                   {
-                     ptrthis->ptrprev = ptrtemp;
                      ptrtemp = ptrthis;
                      ptrthis = ptrthis->ptrnext;
                   }
@@ -415,8 +408,6 @@ int rfile()
    else
    {
       ptrtemp->ptrnext = NULL;
-      ptrlast = ptrtemp;
-      ptrfirst->ptrprev = NULL;
       fclose(fptr);
    }
    return (0);
@@ -692,16 +683,41 @@ void clrfile()
 
 void clear_cardmem()
 {
-   while (ptrfirst)
+   while (ptrfirst != NULL)
    {
-         ptrthis = ptrfirst->ptrnext;
-      if (ptrfirst->question)
-         free(ptrfirst->question);
-      ptrfirst->question = NULL;
-      if (ptrfirst->answer)
-         free(ptrfirst->answer);
-      ptrfirst->answer = NULL;
-      free(ptrfirst);
-         ptrfirst = ptrthis;
+      if (ptrfirst->ptrnext != NULL)
+      {
+         ptrtemp = ptrfirst;
+         ptrfirst = ptrfirst->ptrnext;
+
+         if (ptrtemp->question != NULL)
+         {
+            free(ptrtemp->question);
+            ptrtemp->question = NULL;
+         }
+         if (ptrtemp->answer != NULL)
+         {
+            free(ptrtemp->answer);
+            ptrtemp->answer = NULL;
+         }
+         free(ptrtemp);
+         ptrtemp = NULL;
+      }
+      else
+      {
+         if (ptrfirst->question != NULL)
+         {
+            free(ptrfirst->question);
+            ptrfirst->question = NULL;
+         }
+         if (ptrfirst->answer != NULL)
+         {
+            free(ptrfirst->answer);
+            ptrfirst->answer = NULL;
+         }
+         free(ptrfirst);
+         ptrfirst = NULL;
+
+      }
    }
 }
