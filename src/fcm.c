@@ -97,8 +97,8 @@ int pos = 0;                   /* which row of menu highlighted */
 int code;                      /* keyboard input */
 
 char strnum[4];
-int max_recs = 100;
-int maxRow = 22; // will be modified once stdscr is initiated
+int max_recs = 100; // limit per session in rfile, does not affect file stats shown to user
+int maxRow;         // set after stdscr is initiated
 
 int main(int argc, char *argv[])
 {
@@ -181,7 +181,7 @@ void msg(int msgnum)
        "Left Arrow=View Question     Up Arrow=Correct     Down Arrow=Wrong",
        "Press any key to continue "};
 
-   blanks(maxRow, 0, maxRow + 1, 79, 0);
+   blanks(maxRow, 0, maxRow + 1, 79, 0); // clear bottom of screen only
    disp_str(maxRow, 0, msgptr[msgnum], 0);
 }
 
@@ -214,7 +214,7 @@ int rfile()
    long int number = -1; // 0 if not yet learned, 1 if learned
    ptrtemp = NULL;
 
-   char *field = malloc(MAX_FIELD_LENGTH);
+   char csvfield[MAX_FIELD_LENGTH];
    int field_index = 0;
    int in_quotes = 0;
    int ch;
@@ -231,8 +231,8 @@ int rfile()
    ptrfirst = (struct myflashcard *)malloc(sizeof(struct myflashcard));
    if (ptrfirst == NULL)
    {
-      fclose(fptr);
       em("Out of memory at first card");
+      fclose(fptr);
       return 2;
    }
    ptrfirst->question = NULL;
@@ -250,13 +250,13 @@ int rfile()
 
       if (ch == ',' && !in_quotes)
       {
-         field[field_index] = '\0'; // Null-terminate the field
+         csvfield[field_index] = '\0'; // Null-terminate the csvfield
          switch (column)
          {
          case 1:
             char *endptr = NULL;
-            number = strtol(field, &endptr, 10);
-            if (endptr == field)
+            number = strtol(csvfield, &endptr, 10);
+            if (endptr == csvfield)
             {
                char buffer[80];
                sprintf(buffer, "Invalid number in col 1 row %d\n", row);
@@ -267,14 +267,14 @@ int rfile()
             line_file_start_position = ftell(fptr) - 1 - field_index;
             break;
          case 2:
-            strncpy(qbuffer, field, strlen(field));
-            qbuffer[strlen(field)] = '\0';
+            strncpy(qbuffer, csvfield, strlen(csvfield));
+            qbuffer[strlen(csvfield)] = '\0';
             break;
          default:
          }
 
          column++;
-         field_index = 0; // Reset for the next field
+         field_index = 0; // Reset for the next csvfield
          continue;
       }
 
@@ -283,9 +283,9 @@ int rfile()
       {
          if (in_quotes)
          {
-            // If we're inside quotes, treat newline as part of the field
+            // If we're inside quotes, treat newline as part of the csvfield
             if (field_index < MAX_FIELD_LENGTH - 1)
-               field[field_index++] = ch;
+               csvfield[field_index++] = ch;
             continue;
          }
          else
@@ -293,12 +293,12 @@ int rfile()
             // End of line and not in quotes
             if (field_index > 0)
             {
-               field[field_index] = '\0'; // Null-terminate the last field
+               csvfield[field_index] = '\0'; // Null-terminate the last csvfield
                switch (column)
                {
                case 3:
-                  strncpy(abuffer, field, strlen(field));
-                  abuffer[strlen(field)] = '\0';
+                  strncpy(abuffer, csvfield, strlen(csvfield));
+                  abuffer[strlen(csvfield)] = '\0';
                   break;
                default:
                }
@@ -312,10 +312,11 @@ int rfile()
                   ptrthis->question = (char *)malloc(strlen(qbuffer) + 1);
                   if (ptrthis->question == NULL)
                   {
-                     disp_str(1, 0, "malloc failed for question: ", 0);
-                     disp_str(1, 28, qbuffer, 0); /* refresh(); */
-                     getch();
-                     go_byebye();
+                     char buffer[80];
+                     sprintf(buffer, "malloc failed for question on row %d\n", row);
+                     char *msg = buffer;
+                     em(msg);
+                     return 2;
                   }
                   strncpy(ptrthis->question, qbuffer, strlen(qbuffer));
                   ptrthis->question[strlen(qbuffer)] = '\0';
@@ -323,22 +324,24 @@ int rfile()
                   ptrthis->answer = (char *)malloc(strlen(abuffer) + 1);
                   if (ptrthis->answer == NULL)
                   {
-                     disp_str(1, 0, "malloc failed for answer: ", 0);
-                     disp_str(1, 28, abuffer, 0);
-                     getch();
-                     go_byebye();
+                     char buffer[80];
+                     sprintf(buffer, "malloc failed for answer on row %d\n", row);
+                     char *msg = buffer;
+                     em(msg);
+                     return 2;
                   }
                   strncpy(ptrthis->answer, abuffer, strlen(abuffer));
                   ptrthis->answer[strlen(abuffer)] = '\0';
 
                   Ncount++;
                   ptrthis->ptrnext = (struct myflashcard *)malloc(sizeof(struct myflashcard));
-                  if (!ptrthis->ptrnext)
+                  if (ptrthis->ptrnext == NULL)
                   {
-                     disp_str(1, 0, "Out of memory at card", 0);
-                     fclose(fptr);
-                     getch();
-                     return (2);
+                     char buffer[80];
+                     sprintf(buffer, "malloc failed for ptrnext at Ncount %d\n", Ncount);
+                     char *msg = buffer;
+                     em(msg);
+                     return 2;
                   }
                   ptrthis->ptrnext->question = NULL;
                   ptrthis->ptrnext->answer = NULL;
@@ -349,68 +352,52 @@ int rfile()
                   }
                   else
                   {
-                     disp_str(1, 0, "Out of memory ", 1);
-                     getch();
-                     return (2);
+                     em("Out of memory for some reason I don't understand....");
+                     return 2;
                   }
                }
                row++;
                column = 1;
-               field_index = 0; // Reset for the next field
+               field_index = 0; // Reset for the next csvfield
             }
             else
-            { // expected start of field content but got newline
+            { // expected start of csvfield content but got newline
               // displays when select "flash cards"
-               char buffer[40];
+               char buffer[80];
                sprintf(buffer, "Error: row %d column %d is empty", row, column);
                char *msg = buffer;
-               disp_str(1, 0, msg, 1);
-               getch();
+               em(msg);
                return 2;
             }
          }
          continue; // Continue to the next character
       }
 
-      // Add character to the field
+      // Add character to the csvfield
       if (field_index < MAX_FIELD_LENGTH - 1)
       {
-         field[field_index++] = ch; // Add character to the field
+         csvfield[field_index++] = ch; // Add character to the csvfield
       }
    }
 
-   // Handle the last field if it exists
+   // Handle the last csvfield if it exists
    if (field_index > 0)
    {
-      field[field_index] = '\0'; // Null-terminate the last field
-      printf("Field: %s\n", field);
+      csvfield[field_index] = '\0'; // Null-terminate the last csvfield
+      printf("Field: %s\n", csvfield);
    }
-
-   free(field);
 
    if (Ncount == 0)
    {
-      disp_str(1, 1, "There were no unmatched cards in the file selected", 0);
-      disp_str(2, 1, "To use file first select CLEAR STATISTICS in menu", 0);
-      disp_str(4, 1, "Press any key to continue", 0);
-      getch();
-      fclose(fptr);
-      if (ptrfirst->question)
-         free(ptrfirst->question);
-      ptrfirst->question = NULL;
-      if (ptrfirst->answer)
-         free(ptrfirst->answer);
-      ptrfirst->answer = NULL;
-      free(ptrfirst);
-      ptrthis = ptrfirst = NULL;
-      return (2);
+      em("There were no unmatched cards in the file selected");
+      return 2;
    }
    else
    {
       ptrtemp->ptrnext = NULL;
-      fclose(fptr);
    }
-   return (0);
+   fclose(fptr);
+   return 0;
 }
 
 // count total and correct within file
@@ -505,9 +492,7 @@ void myflash()
    cnt_cards(); // count total and correct in memory
    if (memcnt.total == memcnt.correct)
    {
-      disp_str(1, 0, "There are no unmatched cards in memory ", 1);
-      msg(5);
-      getch();
+      em("There are no unmatched cards in memory");
       return;
    }
    disp_stats_legend();
@@ -616,7 +601,7 @@ void honor_system()
 
 void disp_stats_legend()
 {
-   disp_str(2, 40, "        Cards:", 0); // # of cards IN FILE, detail user doesn't need to know
+   disp_str(2, 40, "        Cards:", 0); // # of cards IN FILE
    disp_str(3, 40, "      Correct:", 0);
    disp_str(4, 40, "    Remaining:", 0);
 }
@@ -631,7 +616,7 @@ void disp_stats() // of cards in file, cards in memory are subset of those loade
    disp_str(4, 56, strnum, 0);
 }
 
-void clrfile()
+void clrfile() // set digit in column 1 to zero
 {
 
    FILE *file = fopen(datafile, "r+");
@@ -717,7 +702,6 @@ void clear_cardmem()
          }
          free(ptrfirst);
          ptrfirst = NULL;
-
       }
    }
 }
