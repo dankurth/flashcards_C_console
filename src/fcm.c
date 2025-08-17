@@ -17,14 +17,13 @@ On Debian GNU/Linux:
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "fcm.h"
 
 #include <dirent.h>
 #include <curses.h>
 #include <locale.h>
 
-#include "disp-str.c"
-#include "blank.c"
+#include "fcm.h"
+#include "display.c"
 #include "sel-file.c"
 
 /* C routines */
@@ -52,8 +51,6 @@ void clrscr()
    clear();
    refresh();
 }
-void disp_str(int row, int column, char strtext[], int attrib);
-void blanks(int row1, int column1, int row2, int column2, int attribute);
 
 char qbuffer[MAX_FIELD_LENGTH];
 char abuffer[MAX_FIELD_LENGTH];
