@@ -67,7 +67,7 @@ int sel_datafile(char datafile[])
   dirp = opendir("."); /* open dir, read a file name */
   if (dirp == NULL)
   {
-    em("error opening directory");
+    em("sel_datafile: error opening directory");
     return 1;
   }
   i = 0;
@@ -79,14 +79,14 @@ int sel_datafile(char datafile[])
   if (!i)
   {
     closedir(dirp);
-    em("no suitable files");
+    em("sel_datafile: no suitable files");
     return 1;
   }
   fileList = (char **)malloc(i * sizeof(char *));
   if (fileList == NULL) // failed to allocate
   {
     closedir(dirp);
-    em("malloc failure on fileList");
+    em("sel_datafile: malloc failure on fileList");
     return 1;
   }
 
@@ -99,7 +99,7 @@ int sel_datafile(char datafile[])
       fileList[i] = (char *)malloc(((strlen(dp->d_name)) * sizeof(char)) + 1);
       if (fileList[i] == NULL)
       {
-        em("malloc failure on item for fileList");
+        em("sel_datafile: malloc failure on item for fileList");
         return 1;
       }
       strcpy(fileList[i], dp->d_name); // copy d_name including string terminator

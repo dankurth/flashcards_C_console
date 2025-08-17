@@ -4,10 +4,10 @@ Examples of builds tested:
 On virtual (VirtualBox 6.1.26) Windows XP using MinGW version v10.0.0:
   gcc -I/MinGW/include/ncurses -o flash fcm.c -lncurses -L/MinGW/bin -static
 On Debian GNU/Linux:
-  // gcc -o flash fcm.c -I/usr/include/ncurses -lncurses -ltermcap
+  // gcc -o flash fcm.c -I/usr/include/ncurses -lncurses -ltermcap -Wall -g
   // does not display characters such as Él properly using mvprintw
 
-  gcc -o flash fcm.c -I/usr/include/ncursesw/ncursesw -lncursesw -ltermcap
+  gcc -o flash fcm.c -I/usr/include/ncursesw/ncursesw -lncursesw -ltermcap -Wall -g
   // displays characters such as Él properly using mvprintw,
   // even though still passing (char *) not (wchar_t *)
 
@@ -26,7 +26,6 @@ On Debian GNU/Linux:
 #include "disp-str.c"
 #include "blank.c"
 #include "sel-file.c"
-#include "byebye.c"
 
 /* C routines */
 void disp_menu(void); /* display menu to user */
@@ -35,7 +34,7 @@ void action(void);    /* initiate action corresponding to request by user*/
 
 int sel_datafile(char datafile[]); /* choose a file to use for session */
 void clrfile(void);                /* clear stats/scores of disk data file */
-void cntfile(void);                /* cnt right/wrong in whole file */
+int cntfile(void);                 /* cnt right/wrong in whole file */
 int rfile(void);                   /* read data file into memory (some or all records)*/
 void update_file(void);            /* update disk record stats to match those in memory   */
 
@@ -47,7 +46,6 @@ void honor_system(void);           /* user tells computer if answer was right */
 void pick(int);                    /*                                */
 void disp_stats(void);             /* show session & file stats */
 void disp_stats_legend(void);      /* show legend for session & file stats */
-void go_byebye(void);              /* clear screen, cleanup unix curses stuff */
 
 void clrscr()
 {
@@ -99,6 +97,7 @@ int code;                      /* keyboard input */
 char strnum[4];
 int max_recs = 100; // limit per session in rfile, does not affect file stats shown to user
 int maxRow;         // set after stdscr is initiated
+int quit = false;   // flag set in menu to quit the program gracefully
 
 int main(int argc, char *argv[])
 {
@@ -115,14 +114,10 @@ int main(int argc, char *argv[])
    {
       strcpy(datafile, argv[1]); // file name to use
    }
-   if (strncmp(datafile, "NoName", 6) != 0)
-   {
-      cntfile();
-   }
    msg(0);
    srand(1);
 
-   while (TRUE)
+   while (!quit)
    {
       disp_str(0, 0, " FLASH by Dan Kurth ", 1);
       disp_str(0, 48, "Data File:", 0);
@@ -156,6 +151,10 @@ int main(int argc, char *argv[])
          }
       } while (code != ENTER);
    }
+   clear();
+   refresh();
+   endwin();
+   printf("Flash by Dan Kurth ended normally\n");
    return 0;
 }
 
@@ -191,17 +190,18 @@ void action()
    {
    case 0: // select file
       clrscr();
-      if (!sel_datafile(datafile)) // if no errors
-         cntfile();
+      sel_datafile(datafile);
       break;
-   case 1: // flash cards
-      myflash();
+   case 1:            // flash cards
+      if (!cntfile()) // if no errors
+         myflash();
       break;
    case 2: // clear statistics
       clrfile();
       break;
    case 3: // quit program
-      go_byebye();
+      quit = 1;
+      return;
    }
    clrscr();
    msg(0);
@@ -224,14 +224,14 @@ int rfile()
 
    if ((fptr = fopen(datafile, "r")) == NULL)
    {
-      em("Cannot open file");
+      em("rfile: Cannot open file");
       return 2;
    }
    clear_cardmem();
    ptrfirst = (struct myflashcard *)malloc(sizeof(struct myflashcard));
    if (ptrfirst == NULL)
    {
-      em("Out of memory at first card");
+      em("rfile: Out of memory at first card");
       fclose(fptr);
       return 2;
    }
@@ -259,7 +259,7 @@ int rfile()
             if (endptr == csvfield)
             {
                char buffer[80];
-               sprintf(buffer, "Invalid number in col 1 row %d\n", row);
+               sprintf(buffer, "rfile: Invalid number in col 1 row %d\n", row);
                char *msg = buffer;
                em(msg);
                return 2;
@@ -313,7 +313,7 @@ int rfile()
                   if (ptrthis->question == NULL)
                   {
                      char buffer[80];
-                     sprintf(buffer, "malloc failed for question on row %d\n", row);
+                     sprintf(buffer, "rfile: malloc failed for question on row %d\n", row);
                      char *msg = buffer;
                      em(msg);
                      return 2;
@@ -325,7 +325,7 @@ int rfile()
                   if (ptrthis->answer == NULL)
                   {
                      char buffer[80];
-                     sprintf(buffer, "malloc failed for answer on row %d\n", row);
+                     sprintf(buffer, "rfile: malloc failed for answer on row %d\n", row);
                      char *msg = buffer;
                      em(msg);
                      return 2;
@@ -338,7 +338,7 @@ int rfile()
                   if (ptrthis->ptrnext == NULL)
                   {
                      char buffer[80];
-                     sprintf(buffer, "malloc failed for ptrnext at Ncount %d\n", Ncount);
+                     sprintf(buffer, "rfile: malloc failed for ptrnext at Ncount %d\n", Ncount);
                      char *msg = buffer;
                      em(msg);
                      return 2;
@@ -352,7 +352,7 @@ int rfile()
                   }
                   else
                   {
-                     em("Out of memory for some reason I don't understand....");
+                     em("rfile: Out of memory for some reason I don't understand....");
                      return 2;
                   }
                }
@@ -364,7 +364,7 @@ int rfile()
             { // expected start of csvfield content but got newline
               // displays when select "flash cards"
                char buffer[80];
-               sprintf(buffer, "Error: row %d column %d is empty", row, column);
+               sprintf(buffer, "rfile: Error: row %d column %d is empty", row, column);
                char *msg = buffer;
                em(msg);
                return 2;
@@ -389,7 +389,7 @@ int rfile()
 
    if (Ncount == 0)
    {
-      em("There were no unmatched cards in the file selected");
+      em("rfile: There were no unmatched cards in the file selected");
       return 2;
    }
    else
@@ -401,7 +401,7 @@ int rfile()
 }
 
 // count total and correct within file
-void cntfile()
+int cntfile()
 {
    FILE *fptr;
    int in_quotes = 0;
@@ -413,10 +413,8 @@ void cntfile()
    filecnt.total = 0;
    if ((fptr = fopen(datafile, "r")) == NULL)
    {
-      disp_str(2, 0, "Can't open file", 0);
-      disp_str(2, 16, datafile, 0);
-      getch();
-      go_byebye();
+      em("cntfile: Cannot open file");
+      return 1;
    }
 
    while ((c = fgetc(fptr)) != EOF)
@@ -452,22 +450,21 @@ void cntfile()
    }
 
    fclose(fptr);
+   return 0;
 }
 
 void update_file()
 {
    long int offset;
    FILE *fptr;
-   if (ptrfirst == (struct myflashcard *)NULL)
+   if (ptrfirst == NULL)
    {
-      printf("\nCan't write empty list.\n");
-      getch();
+      em("update_file: empty list");
       return;
    }
    if ((fptr = fopen(datafile, "r+")) == NULL)
    {
-      printf("\nCan't access disk drive\n");
-      getch();
+      em("update_file: failed to open file");
       return;
    }
    ptrthis = ptrfirst;
@@ -492,7 +489,7 @@ void myflash()
    cnt_cards(); // count total and correct in memory
    if (memcnt.total == memcnt.correct)
    {
-      em("There are no unmatched cards in memory");
+      em("myflash: There are no unmatched cards in memory");
       return;
    }
    disp_stats_legend();
@@ -622,7 +619,7 @@ void clrfile() // set digit in column 1 to zero
    FILE *file = fopen(datafile, "r+");
    if (!file)
    {
-      em("Unable to open file");
+      em("clrfile: Unable to open file");
       return;
    }
 
