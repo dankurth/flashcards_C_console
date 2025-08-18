@@ -17,10 +17,11 @@ On Debian GNU/Linux:
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 #include <dirent.h>
 #include <curses.h>
 #include <locale.h>
+#include <ctype.h>
+#include <stdbool.h>
 
 #include "fcm.h"
 #include "display.c"
@@ -45,6 +46,7 @@ void honor_system(void);           /* user tells computer if answer was right */
 void pick(int);                    /*                                */
 void disp_stats(void);             /* show session & file stats */
 void disp_stats_legend(void);      /* show legend for session & file stats */
+bool isEmptyOrSpaces(const char str[]);
 
 void clrscr()
 {
@@ -255,6 +257,14 @@ int rfile()
          case 2: // the question
             strncpy(qbuffer, csvfield, strlen(csvfield));
             qbuffer[strlen(csvfield)] = '\0';
+            if (isEmptyOrSpaces(qbuffer))
+            {
+               char buffer[80];
+               sprintf(buffer, "rfile: blank or empty question at row %d\n", row);
+               char *msg = buffer;
+               em(msg);
+               return 2;
+            }
             break;
          default: // 3rd column is last currently used but as last is not terminated by comma
                   // so for now anything else after 2nd terminated by column is just ignored
@@ -282,7 +292,7 @@ int rfile()
                csvfield[field_index] = '\0'; // Null-terminate the last csvfield
                switch (column)
                {
-               case 1: // digit followed by newline  
+               case 1: // digit followed by newline
                case 2: // question followed by newline
                   char buffer[80];
                   sprintf(buffer, "rfile: non-delimited column on row %d\n", row);
@@ -293,6 +303,14 @@ int rfile()
                case 3: // the answer, also currently column 3 is last column used
                   strncpy(abuffer, csvfield, strlen(csvfield));
                   abuffer[strlen(csvfield)] = '\0';
+                  if (isEmptyOrSpaces(abuffer))
+                  {
+                     char buffer[80];
+                     sprintf(buffer, "rfile: blank or empty answer at row %d\n", row);
+                     char *msg = buffer;
+                     em(msg);
+                     return 2;
+                  }
                   break;
                default:
                }
@@ -686,4 +704,18 @@ void clear_cardmem()
          ptrfirst = NULL;
       }
    }
+}
+
+bool isEmptyOrSpaces(const char str[])
+{
+   for (int i = 0; str[i] != '\0'; i++)
+   {
+      // If find a non-whitespace character, return false
+      if (!isspace((unsigned char)str[i]))
+      {
+         return false;
+      }
+   }
+   // If only found whitespace or the string is empty, return true
+   return true;
 }
