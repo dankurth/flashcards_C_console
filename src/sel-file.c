@@ -1,5 +1,6 @@
+#include "fcm.h"
 
-int lastRow = 15; // maximum screen row index to use, might use less
+// int lastRow:  maximum screen row index to use based on call to ncurses, set in fcm.c
 int lastFile = 0; // fileList index for the last filename in it
 int t = 0;        // top, index of filename shown in first row of screen
 int s = 0;        // selected row, index of row selected
@@ -13,7 +14,7 @@ int s = 0;        // selected row, index of row selected
  * The filename which is on the selected row (first row by default) is highlighted,
  * all others are shown in normal font.
  */
-void display_fileList(char **files)
+void display_fileList(char **files, int lastRow)
 {
   clear();
   int i = t;
@@ -32,7 +33,7 @@ void display_fileList(char **files)
   }
 }
 
-int sel_datafile(char datafile[])
+int sel_datafile(char datafile[], int lastRow)
 {
   int code;
   DIR *dirp;
@@ -84,7 +85,7 @@ int sel_datafile(char datafile[])
   }
   closedir(dirp);
 
-  display_fileList(fileList);
+  display_fileList(fileList, lastRow);
 
   /** As user scrolls down list of displayed filenames each is highlighted in turn.
    * If user scrolls down below bottom row the list of displayed filenames is moved up by one
@@ -100,12 +101,12 @@ int sel_datafile(char datafile[])
       if (s > 0)
       {
         s--;
-        display_fileList(fileList);
+        display_fileList(fileList, lastRow);
       }
       else if (t > 0)
       {
         t--;
-        display_fileList(fileList);
+        display_fileList(fileList, lastRow);
       }
       break;
     case KEY_DOWN: // user pressed down arrow
@@ -115,7 +116,7 @@ int sel_datafile(char datafile[])
           s++;
         else
           t++;
-        display_fileList(fileList);
+        display_fileList(fileList, lastRow);
       }
       break;
     case ENTER:
@@ -128,8 +129,10 @@ int sel_datafile(char datafile[])
   for (i = 0; i <= lastFile; i++)
   {
     free(fileList[i]);
+    fileList[i] = NULL;
   }
   free(fileList);
+  fileList = NULL;
 
   return 0;
 }

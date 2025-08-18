@@ -31,11 +31,11 @@ void disp_menu(void); /* display menu to user */
 void msg(int msgnum); /* display messages to user  */
 void action(void);    /* initiate action corresponding to request by user*/
 
-int sel_datafile(char datafile[]); /* choose a file to use for session */
-void clrfile(void);                /* clear stats/scores of disk data file */
-int cntfile(void);                 /* cnt right/wrong in whole file */
-int rfile(void);                   /* read data file into memory (some or all records)*/
-void update_file(void);            /* update disk record stats to match those in memory   */
+int sel_datafile(char datafile[], int lastRow); /* choose a file to use for session */
+void clrfile(void);                             /* clear stats/scores of disk data file */
+int cntfile(void);                              /* cnt right/wrong in whole file */
+int rfile(void);                                /* read data file into memory (some or all records)*/
+void update_file(void);                         /* update disk record stats to match those in memory   */
 
 void myflash(void); /* show questions, prompt for answers & keep stats */
 void cnt_cards(void);
@@ -86,21 +86,21 @@ char *str[] = {
     "quit            "};
 
 char datafile[256] = "NoName"; /* name of file to use as datafile */
-int firstrow = 0;              /* first row of str to display as menu */
-int lastrow = 3;               /* last row of str to display as menu */
+int firstMenuRow = 0;          /* first row of str to display as menu */
+int lastMenuRow = 3;           /* last row of str to display as menu */
 int pos = 0;                   /* which row of menu highlighted */
 int code;                      /* keyboard input */
 
 char strnum[4];
 int max_recs = 100; // limit per session in rfile, does not affect file stats shown to user
-int maxRow;         // set after stdscr is initiated
+int lastRow;        // set after stdscr is initiated, last row of display for curses
 int quit = false;   // flag set in menu to quit the program gracefully
 
 int main(int argc, char *argv[])
 {
    setlocale(LC_ALL, "");
    initscr();
-   maxRow = getmaxy(stdscr) - 1;
+   lastRow = getmaxy(stdscr) - 1;
    cbreak();
    noecho();
    keypad(stdscr, TRUE);
@@ -126,20 +126,20 @@ int main(int argc, char *argv[])
          switch (code)
          {
          case KEY_UP:
-            disp_str(pos - firstrow + ver_offset, hor_offset, str[pos], 0);
-            if (pos > firstrow)
+            disp_str(pos - firstMenuRow + ver_offset, hor_offset, str[pos], 0);
+            if (pos > firstMenuRow)
                --pos;
             else
-               pos = lastrow;
-            disp_str(pos - firstrow + ver_offset, hor_offset, str[pos], 1);
+               pos = lastMenuRow;
+            disp_str(pos - firstMenuRow + ver_offset, hor_offset, str[pos], 1);
             break;
          case KEY_DOWN:
-            disp_str(pos - firstrow + ver_offset, hor_offset, str[pos], 0);
-            if (pos < lastrow)
+            disp_str(pos - firstMenuRow + ver_offset, hor_offset, str[pos], 0);
+            if (pos < lastMenuRow)
                ++pos;
             else
-               pos = firstrow;
-            disp_str(pos - firstrow + ver_offset, hor_offset, str[pos], 1);
+               pos = firstMenuRow;
+            disp_str(pos - firstMenuRow + ver_offset, hor_offset, str[pos], 1);
             break;
          case ENTER:
             action();
@@ -158,12 +158,12 @@ int main(int argc, char *argv[])
 void disp_menu()
 {
    int row;
-   for (row = firstrow; row <= lastrow; row++)
+   for (row = firstMenuRow; row <= lastMenuRow; row++)
    {
       if (row == pos)
-         disp_str(row - firstrow + ver_offset, hor_offset, str[row], 1);
+         disp_str(row - firstMenuRow + ver_offset, hor_offset, str[row], 1);
       else
-         disp_str(row - firstrow + ver_offset, hor_offset, str[row], 0);
+         disp_str(row - firstMenuRow + ver_offset, hor_offset, str[row], 0);
    }
 }
 
@@ -177,8 +177,8 @@ void msg(int msgnum)
        "Left Arrow=View Question     Up Arrow=Correct     Down Arrow=Wrong",
        "Press any key to continue "};
 
-   blanks(maxRow, 0, maxRow + 1, 79, 0); // clear bottom of screen only
-   disp_str(maxRow, 0, msgptr[msgnum], 0);
+   blanks(lastRow, 0, lastRow + 1, 79, 0); // clear bottom of screen only
+   disp_str(lastRow, 0, msgptr[msgnum], 0);
 }
 
 void action()
@@ -187,7 +187,7 @@ void action()
    {
    case 0: // select file
       clrscr();
-      sel_datafile(datafile);
+      sel_datafile(datafile, lastRow);
       break;
    case 1:            // flash cards
       if (!cntfile()) // if no errors
