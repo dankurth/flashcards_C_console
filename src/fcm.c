@@ -66,6 +66,7 @@ struct myflashcard
 struct myflashcard *ptrfirst = NULL;
 struct myflashcard *ptrthis = NULL;
 struct myflashcard *ptrtemp = NULL;
+struct myflashcard *ptrprev = NULL;
 
 struct
 {
@@ -209,7 +210,6 @@ int rfile()
    FILE *fptr;
    int Ncount = 0, Ycount = 0;
    long int number = -1; // 0 if not yet learned, 1 if learned
-   ptrtemp = NULL;
 
    char csvfield[MAX_FIELD_LENGTH];
    int field_index = 0;
@@ -225,17 +225,6 @@ int rfile()
       return 2;
    }
    clear_cardmem();
-   ptrfirst = (struct myflashcard *)malloc(sizeof(struct myflashcard));
-   if (ptrfirst == NULL)
-   {
-      em("rfile: Out of memory at first card");
-      fclose(fptr);
-      return 2;
-   }
-   ptrfirst->question = NULL;
-   ptrfirst->answer = NULL;
-   ptrfirst->ptrnext = NULL;
-   ptrthis = ptrfirst;
 
    while (((ch = fgetc(fptr)) != EOF) && (Ncount < max_recs))
    {
@@ -250,7 +239,7 @@ int rfile()
          csvfield[field_index] = '\0'; // Null-terminate the csvfield
          switch (column)
          {
-         case 1:
+         case 1: // the marker for learned or not learned, a number (0 or 1)
             char *endptr = NULL;
             number = strtol(csvfield, &endptr, 10);
             if (endptr == csvfield)
@@ -263,13 +252,13 @@ int rfile()
             }
             line_file_start_position = ftell(fptr) - 1 - field_index;
             break;
-         case 2:
+         case 2: // the question
             strncpy(qbuffer, csvfield, strlen(csvfield));
             qbuffer[strlen(csvfield)] = '\0';
             break;
-         default:
+         default: // 3rd column is last currently used but as last is not terminated by comma
+                  // so for now anything else after 2nd terminated by column is just ignored
          }
-
          column++;
          field_index = 0; // Reset for the next csvfield
          continue;
@@ -287,13 +276,13 @@ int rfile()
          }
          else
          {
-            // End of line and not in quotes
-            if (field_index > 0)
+            // End of line and not in quotes so may be terminating last column
+            if (field_index > 0) // line has columns, so...not empty
             {
                csvfield[field_index] = '\0'; // Null-terminate the last csvfield
                switch (column)
                {
-               case 3:
+               case 3: // the answer, also currently column 3 is last column used
                   strncpy(abuffer, csvfield, strlen(csvfield));
                   abuffer[strlen(csvfield)] = '\0';
                   break;
@@ -301,67 +290,67 @@ int rfile()
                }
                if (number)
                   Ycount++;
-               else
+               else // not marked as answered correctly yet, so add it to session quiz list
                {
-                  ptrthis->answered_correctly = number;
-                  ptrthis->disk_fptr = line_file_start_position;
-
-                  ptrthis->question = (char *)malloc(strlen(qbuffer) + 1);
-                  if (ptrthis->question == NULL)
+                  ptrthis = (struct myflashcard *)malloc(sizeof(struct myflashcard));
+                  if (ptrthis == NULL)
                   {
                      char buffer[80];
-                     sprintf(buffer, "rfile: malloc failed for question on row %d\n", row);
+                     sprintf(buffer, "rfile: malloc failed for ptrthis at Ncount %d\n", Ncount);
                      char *msg = buffer;
                      em(msg);
                      return 2;
-                  }
-                  strncpy(ptrthis->question, qbuffer, strlen(qbuffer));
-                  ptrthis->question[strlen(qbuffer)] = '\0';
-
-                  ptrthis->answer = (char *)malloc(strlen(abuffer) + 1);
-                  if (ptrthis->answer == NULL)
-                  {
-                     char buffer[80];
-                     sprintf(buffer, "rfile: malloc failed for answer on row %d\n", row);
-                     char *msg = buffer;
-                     em(msg);
-                     return 2;
-                  }
-                  strncpy(ptrthis->answer, abuffer, strlen(abuffer));
-                  ptrthis->answer[strlen(abuffer)] = '\0';
-
-                  Ncount++;
-                  ptrthis->ptrnext = (struct myflashcard *)malloc(sizeof(struct myflashcard));
-                  if (ptrthis->ptrnext == NULL)
-                  {
-                     char buffer[80];
-                     sprintf(buffer, "rfile: malloc failed for ptrnext at Ncount %d\n", Ncount);
-                     char *msg = buffer;
-                     em(msg);
-                     return 2;
-                  }
-                  ptrthis->ptrnext->question = NULL;
-                  ptrthis->ptrnext->answer = NULL;
-                  if (ptrthis->ptrnext)
-                  {
-                     ptrtemp = ptrthis;
-                     ptrthis = ptrthis->ptrnext;
                   }
                   else
                   {
-                     em("rfile: Out of memory for some reason I don't understand....");
-                     return 2;
+                     ptrthis->answered_correctly = number;
+                     ptrthis->disk_fptr = line_file_start_position;
+
+                     ptrthis->question = (char *)malloc(strlen(qbuffer) + 1);
+                     if (ptrthis->question == NULL)
+                     {
+                        char buffer[80];
+                        sprintf(buffer, "rfile: malloc failed for question on row %d\n", row);
+                        char *msg = buffer;
+                        em(msg);
+                        return 2;
+                     }
+                     strncpy(ptrthis->question, qbuffer, strlen(qbuffer));
+                     ptrthis->question[strlen(qbuffer)] = '\0';
+
+                     ptrthis->answer = (char *)malloc(strlen(abuffer) + 1);
+                     if (ptrthis->answer == NULL)
+                     {
+                        char buffer[80];
+                        sprintf(buffer, "rfile: malloc failed for answer on row %d\n", row);
+                        char *msg = buffer;
+                        em(msg);
+                        return 2;
+                     }
+                     strncpy(ptrthis->answer, abuffer, strlen(abuffer));
+                     ptrthis->answer[strlen(abuffer)] = '\0';
+
+                     Ncount++; 
+
+                     ptrthis->ptrnext = NULL; // no card after this card yet
+
+                     if (ptrfirst == NULL) // there can be only one
+                        ptrfirst = ptrthis;
+
+                     if (ptrprev != NULL)  // if there was a previous card
+                        ptrprev->ptrnext = ptrthis; // next card of previous card is ... this card
+
+                     ptrprev = ptrthis; // on next round the previous card will be ... this card
                   }
                }
                row++;
                column = 1;
                field_index = 0; // Reset for the next csvfield
             }
-            else
-            { // expected start of csvfield content but got newline
-              // displays when select "flash cards"
+            else // expected start of csvfield content but got newline
+            {    // empty line? // should I just ignore it? dunno, so notify for now
                char buffer[80];
-               sprintf(buffer, "rfile: Error: row %d column %d is empty", row, column);
+               sprintf(buffer, "rfile: row %d column %d is empty", row, column);
                char *msg = buffer;
                em(msg);
                return 2;
@@ -370,18 +359,20 @@ int rfile()
          continue; // Continue to the next character
       }
 
-      // Add character to the csvfield
+      // not a start or end quote, nor a working (terminating) comma, nor a working newline
+      // so must be a content character for the current column/field
       if (field_index < MAX_FIELD_LENGTH - 1)
-      {
-         csvfield[field_index++] = ch; // Add character to the csvfield
+      { // add character to the csvfield, within limits
+         csvfield[field_index++] = ch;
       }
    }
 
-   // Handle the last csvfield if it exists
+   // Handle any (very unexpected) non-terminated csvfield if it exists
    if (field_index > 0)
    {
       csvfield[field_index] = '\0'; // Null-terminate the last csvfield
-      printf("Field: %s\n", csvfield);
+      char *msg = csvfield;
+      em(msg);
    }
 
    if (Ncount == 0)
@@ -389,10 +380,7 @@ int rfile()
       em("rfile: There were no unmatched cards in the file selected");
       return 2;
    }
-   else
-   {
-      ptrtemp->ptrnext = NULL;
-   }
+
    fclose(fptr);
    return 0;
 }
