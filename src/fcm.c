@@ -276,12 +276,20 @@ int rfile()
          }
          else
          {
-            // End of line and not in quotes so may be terminating last column
-            if (field_index > 0) // line has columns, so...not empty
+            // End of line and not in quotes
+            if (field_index > 0) // line has columns
             {
                csvfield[field_index] = '\0'; // Null-terminate the last csvfield
                switch (column)
                {
+               case 1: // digit followed by newline  
+               case 2: // question followed by newline
+                  char buffer[80];
+                  sprintf(buffer, "rfile: non-delimited column on row %d\n", row);
+                  char *msg = buffer;
+                  em(msg);
+                  return 2;
+                  break;
                case 3: // the answer, also currently column 3 is last column used
                   strncpy(abuffer, csvfield, strlen(csvfield));
                   abuffer[strlen(csvfield)] = '\0';
@@ -330,14 +338,14 @@ int rfile()
                      strncpy(ptrthis->answer, abuffer, strlen(abuffer));
                      ptrthis->answer[strlen(abuffer)] = '\0';
 
-                     Ncount++; 
+                     Ncount++;
 
                      ptrthis->ptrnext = NULL; // no card after this card yet
 
                      if (ptrfirst == NULL) // there can be only one
                         ptrfirst = ptrthis;
 
-                     if (ptrprev != NULL)  // if there was a previous card
+                     if (ptrprev != NULL)           // if there was a previous card
                         ptrprev->ptrnext = ptrthis; // next card of previous card is ... this card
 
                      ptrprev = ptrthis; // on next round the previous card will be ... this card
@@ -347,8 +355,8 @@ int rfile()
                column = 1;
                field_index = 0; // Reset for the next csvfield
             }
-            else // expected start of csvfield content but got newline
-            {    // empty line? // should I just ignore it? dunno, so notify for now
+            else
+            { // expected start of content but got newline
                char buffer[80];
                sprintf(buffer, "rfile: row %d column %d is empty", row, column);
                char *msg = buffer;
@@ -365,14 +373,6 @@ int rfile()
       { // add character to the csvfield, within limits
          csvfield[field_index++] = ch;
       }
-   }
-
-   // Handle any (very unexpected) non-terminated csvfield if it exists
-   if (field_index > 0)
-   {
-      csvfield[field_index] = '\0'; // Null-terminate the last csvfield
-      char *msg = csvfield;
-      em(msg);
    }
 
    if (Ncount == 0)
