@@ -378,7 +378,6 @@ int rfile()
                   if (isEmptyOrSpaces(ibuffer))
                   {
                      ptrthis->instructions = NULL;
-                     ibuffer[0] = '\0';
                   }
                   else
                   {
@@ -393,7 +392,8 @@ int rfile()
                      }
                      strncpy(ptrthis->instructions, ibuffer, strlen(ibuffer));
                      ptrthis->instructions[strlen(ibuffer)] = '\0';
-                  }
+                  } 
+                  ibuffer[0] = '\0'; // do NOT re-use instructions for next row from CSV file
 
                   Ncount++;
 
