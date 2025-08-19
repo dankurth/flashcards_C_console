@@ -283,8 +283,7 @@ int rfile()
                return 2;
             }
             break;
-         default: // 3rd column is last currently used but as last is not terminated by comma
-                  // so for now anything else after 2nd terminated by column is just ignored
+         default: // 4th column is last used but as last is not terminated by comma
          }
          column++;
          field_index = 0; // Reset for the next csvfield
@@ -303,127 +302,115 @@ int rfile()
          }
          else
          {
-            // End of line and not in quotes
-            if (field_index > 0) // line has columns
+            csvfield[field_index] = '\0'; // Null-terminate the last csvfield
+            switch (column)
             {
-               csvfield[field_index] = '\0'; // Null-terminate the last csvfield
-               switch (column)
-               {
-               case 1: // digit followed by newline
-               case 2: // question followed by newline
-                  char buffer[80];
-                  sprintf(buffer, "rfile: non-delimited column on row %d\n", row);
-                  char *msg = buffer;
-                  em(msg);
-                  return 2;
-                  break;
-               case 3: // answer followed by newline (so....no optional instructions)
-                  strncpy(abuffer, csvfield, strlen(csvfield));
-                  abuffer[strlen(csvfield)] = '\0';
-                  if (isEmptyOrSpaces(abuffer))
-                  {
-                     char buffer[80];
-                     sprintf(buffer, "rfile: blank or empty answer at row %d\n", row);
-                     char *msg = buffer;
-                     em(msg);
-                     return 2;
-                  }
-                  break;
-               case 4: // optional instructions
-                  strncpy(ibuffer, csvfield, strlen(csvfield));
-                  ibuffer[strlen(csvfield)] = '\0';
-                  break;
-               default:
-               }
-               if (number)
-                  Ycount++;
-               else // not marked as answered correctly yet, so add it to session quiz list
-               {
-                  ptrthis = (struct myflashcard *)malloc(sizeof(struct myflashcard));
-                  if (ptrthis == NULL)
-                  {
-                     char buffer[80];
-                     sprintf(buffer, "rfile: malloc failed for ptrthis at Ncount %d\n", Ncount);
-                     char *msg = buffer;
-                     em(msg);
-                     return 2;
-                  }
-                  else
-                  {
-                     ptrthis->answered_correctly = number;
-                     ptrthis->disk_fptr = line_file_start_position;
-
-                     ptrthis->question = (char *)malloc(strlen(qbuffer) + 1);
-                     if (ptrthis->question == NULL)
-                     {
-                        char buffer[80];
-                        sprintf(buffer, "rfile: malloc failed for question on row %d\n", row);
-                        char *msg = buffer;
-                        em(msg);
-                        return 2;
-                     }
-                     strncpy(ptrthis->question, qbuffer, strlen(qbuffer));
-                     ptrthis->question[strlen(qbuffer)] = '\0';
-                     qbuffer[0] = '\0';
-
-                     ptrthis->answer = (char *)malloc(strlen(abuffer) + 1);
-                     if (ptrthis->answer == NULL)
-                     {
-                        char buffer[80];
-                        sprintf(buffer, "rfile: malloc failed for answer on row %d\n", row);
-                        char *msg = buffer;
-                        em(msg);
-                        return 2;
-                     }
-                     strncpy(ptrthis->answer, abuffer, strlen(abuffer));
-                     ptrthis->answer[strlen(abuffer)] = '\0';
-                     abuffer[0] = '\0';
-
-                     if (!isEmptyOrSpaces(ibuffer))
-                     {
-                        ptrthis->instructions = (char *)malloc(strlen(ibuffer) + 1);
-                        if (ptrthis->instructions == NULL)
-                        {
-                           char buffer[80];
-                           sprintf(buffer, "rfile: malloc failed for instructions on row %d\n", row);
-                           char *msg = buffer;
-                           em(msg);
-                           return 2;
-                        }
-                        strncpy(ptrthis->instructions, ibuffer, strlen(ibuffer));
-                        ptrthis->instructions[strlen(ibuffer)] = '\0';
-                        ibuffer[0] = '\0';
-                     }
-                     else
-                     {
-                        ptrthis->instructions = NULL;
-                     }
-
-                     Ncount++;
-
-                     ptrthis->ptrnext = NULL; // no card after this card yet
-
-                     if (ptrfirst == NULL) // there can be only one
-                        ptrfirst = ptrthis;
-
-                     if (ptrprev != NULL)           // if there was a previous card
-                        ptrprev->ptrnext = ptrthis; // next card of previous card is ... this card
-
-                     ptrprev = ptrthis; // on next round the previous card will be ... this card
-                  }
-               }
-               row++;
-               column = 1;
-               field_index = 0; // Reset for the next csvfield
-            }
-            else
-            { // expected start of content but got newline
+            case 1: // digit followed by newline
+            case 2: // question followed by newline
                char buffer[80];
-               sprintf(buffer, "rfile: row %d column %d is empty", row, column);
+               sprintf(buffer, "rfile: non-delimited column on row %d\n", row);
                char *msg = buffer;
                em(msg);
                return 2;
+               break;
+            case 3: // answer followed by newline (so....no optional instructions)
+               strncpy(abuffer, csvfield, strlen(csvfield));
+               abuffer[strlen(csvfield)] = '\0';
+               if (isEmptyOrSpaces(abuffer))
+               {
+                  char buffer[80];
+                  sprintf(buffer, "rfile: blank or empty answer at row %d\n", row);
+                  char *msg = buffer;
+                  em(msg);
+                  return 2;
+               }
+               break;
+            case 4: // optional instructions
+               strncpy(ibuffer, csvfield, strlen(csvfield));
+               ibuffer[strlen(csvfield)] = '\0';
+               break;
+            default:
             }
+            if (number)
+               Ycount++;
+            else // not marked as answered correctly yet, so add it to session quiz list
+            {
+               ptrthis = (struct myflashcard *)malloc(sizeof(struct myflashcard));
+               if (ptrthis == NULL)
+               {
+                  char buffer[80];
+                  sprintf(buffer, "rfile: malloc failed for ptrthis at Ncount %d\n", Ncount);
+                  char *msg = buffer;
+                  em(msg);
+                  return 2;
+               }
+               else
+               {
+                  ptrthis->answered_correctly = number;
+                  ptrthis->disk_fptr = line_file_start_position;
+
+                  ptrthis->question = (char *)malloc(strlen(qbuffer) + 1);
+                  if (ptrthis->question == NULL)
+                  {
+                     char buffer[80];
+                     sprintf(buffer, "rfile: malloc failed for question on row %d\n", row);
+                     char *msg = buffer;
+                     em(msg);
+                     return 2;
+                  }
+                  strncpy(ptrthis->question, qbuffer, strlen(qbuffer));
+                  ptrthis->question[strlen(qbuffer)] = '\0';
+                  qbuffer[0] = '\0';
+
+                  ptrthis->answer = (char *)malloc(strlen(abuffer) + 1);
+                  if (ptrthis->answer == NULL)
+                  {
+                     char buffer[80];
+                     sprintf(buffer, "rfile: malloc failed for answer on row %d\n", row);
+                     char *msg = buffer;
+                     em(msg);
+                     return 2;
+                  }
+                  strncpy(ptrthis->answer, abuffer, strlen(abuffer));
+                  ptrthis->answer[strlen(abuffer)] = '\0';
+                  abuffer[0] = '\0';
+
+                  if (isEmptyOrSpaces(ibuffer))
+                  {
+                     ptrthis->instructions = NULL;
+                     ibuffer[0] = '\0';
+                  }
+                  else
+                  {
+                     ptrthis->instructions = (char *)malloc(strlen(ibuffer) + 1);
+                     if (ptrthis->instructions == NULL)
+                     {
+                        char buffer[80];
+                        sprintf(buffer, "rfile: malloc failed for instructions on row %d\n", row);
+                        char *msg = buffer;
+                        em(msg);
+                        return 2;
+                     }
+                     strncpy(ptrthis->instructions, ibuffer, strlen(ibuffer));
+                     ptrthis->instructions[strlen(ibuffer)] = '\0';
+                  }
+
+                  Ncount++;
+
+                  ptrthis->ptrnext = NULL; // no card after this card yet
+
+                  if (ptrfirst == NULL) // there can be only one
+                     ptrfirst = ptrthis;
+
+                  if (ptrprev != NULL)           // if there was a previous card
+                     ptrprev->ptrnext = ptrthis; // next card of previous card is ... this card
+
+                  ptrprev = ptrthis; // on next round the previous card will be ... this card
+               }
+            }
+            row++;
+            column = 1;
+            field_index = 0; // Reset for the next csvfield
          }
          continue; // Continue to the next character
       }
