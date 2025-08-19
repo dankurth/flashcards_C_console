@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <dirent.h>
+#include <curses.h>
 #include "fcm.h"
 
 // int lastRow:  maximum screen row index to use based on call to ncurses, set in fcm.c
