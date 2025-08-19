@@ -1,12 +1,11 @@
-0,one (in Spanish),uno
+0,one,uno,translate (Spanish)
 0,"you (plural, familiar, in Spanish):
   a. tú
   b. usted
-  c. vostros
+  c. vosotros
   d. vosotras
   e. vos
-  ",c
+  ",c,"Choose letter corresponding to correct answer, e.g. 'b', or 'e', or whatever you think it is."
 0,The original 13 colonies of the United States were,"New Hampshire, Massachusetts, Rhode Island, Connecticut, New York, New Jersey, Pennsylvania,
 Delaware, Maryland, Virginia, North Carolina, South Carolina, and Georgia."
-0,you or him,tú o Él
-0,you or him (2),tú o él o Él
+0,you or him,tú o él

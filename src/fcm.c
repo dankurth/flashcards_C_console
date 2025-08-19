@@ -54,15 +54,17 @@ void clrscr()
    refresh();
 }
 
-char qbuffer[MAX_FIELD_LENGTH];
-char abuffer[MAX_FIELD_LENGTH];
+char qbuffer[MAX_FIELD_LENGTH]; // question
+char abuffer[MAX_FIELD_LENGTH]; // answer
+char ibuffer[MAX_FIELD_LENGTH]; // instructions (if any)
 
 struct myflashcard
 {
-   int answered_correctly;
+   int answered_correctly; // 0 or 1
    char *question;
    char *answer;
-   long int disk_fptr;
+   char *instructions; // optional, may be NULL
+   long int disk_fptr; // start of corresponding row in datafile, used to update file
    struct myflashcard *ptrnext;
 };
 struct myflashcard *ptrfirst = NULL;
@@ -220,6 +222,9 @@ int rfile()
    int row = 1;
    int column = 1;
    long int line_file_start_position;
+   qbuffer[0] = '\0';
+   abuffer[0] = '\0';
+   ibuffer[0] = '\0';
 
    if ((fptr = fopen(datafile, "r")) == NULL)
    {
@@ -266,6 +271,18 @@ int rfile()
                return 2;
             }
             break;
+         case 3: // the answer (if delimiter comma due to optional instructions in column 4)
+            strncpy(abuffer, csvfield, strlen(csvfield));
+            abuffer[strlen(csvfield)] = '\0';
+            if (isEmptyOrSpaces(abuffer))
+            {
+               char buffer[80];
+               sprintf(buffer, "rfile: blank or empty answer at row %d\n", row);
+               char *msg = buffer;
+               em(msg);
+               return 2;
+            }
+            break;
          default: // 3rd column is last currently used but as last is not terminated by comma
                   // so for now anything else after 2nd terminated by column is just ignored
          }
@@ -300,7 +317,7 @@ int rfile()
                   em(msg);
                   return 2;
                   break;
-               case 3: // the answer, also currently column 3 is last column used
+               case 3: // answer followed by newline (so....no optional instructions)
                   strncpy(abuffer, csvfield, strlen(csvfield));
                   abuffer[strlen(csvfield)] = '\0';
                   if (isEmptyOrSpaces(abuffer))
@@ -311,6 +328,10 @@ int rfile()
                      em(msg);
                      return 2;
                   }
+                  break;
+               case 4: // optional instructions
+                  strncpy(ibuffer, csvfield, strlen(csvfield));
+                  ibuffer[strlen(csvfield)] = '\0';
                   break;
                default:
                }
@@ -343,6 +364,7 @@ int rfile()
                      }
                      strncpy(ptrthis->question, qbuffer, strlen(qbuffer));
                      ptrthis->question[strlen(qbuffer)] = '\0';
+                     qbuffer[0] = '\0';
 
                      ptrthis->answer = (char *)malloc(strlen(abuffer) + 1);
                      if (ptrthis->answer == NULL)
@@ -355,6 +377,27 @@ int rfile()
                      }
                      strncpy(ptrthis->answer, abuffer, strlen(abuffer));
                      ptrthis->answer[strlen(abuffer)] = '\0';
+                     abuffer[0] = '\0';
+
+                     if (!isEmptyOrSpaces(ibuffer))
+                     {
+                        ptrthis->instructions = (char *)malloc(strlen(ibuffer) + 1);
+                        if (ptrthis->instructions == NULL)
+                        {
+                           char buffer[80];
+                           sprintf(buffer, "rfile: malloc failed for instructions on row %d\n", row);
+                           char *msg = buffer;
+                           em(msg);
+                           return 2;
+                        }
+                        strncpy(ptrthis->instructions, ibuffer, strlen(ibuffer));
+                        ptrthis->instructions[strlen(ibuffer)] = '\0';
+                        ibuffer[0] = '\0';
+                     }
+                     else
+                     {
+                        ptrthis->instructions = NULL;
+                     }
 
                      Ncount++;
 
@@ -559,7 +602,9 @@ void honor_system()
 {
    do
    {
-      disp_str(6, 0, ptrthis->question, 0);
+      if (ptrthis->instructions != NULL)
+         disp_str(6, 0, ptrthis->instructions, 0);
+      disp_str(8, 0, ptrthis->question, 0);
       msg(3);
       int validInput = 0;
       do
@@ -574,9 +619,9 @@ void honor_system()
             return;
          }
       } while (!validInput);
-      blanks(6, 0, 23, 99, 0); // clear question
+      blanks(6, 0, 23, 99, 0); // clear question and any related instructions
 
-      disp_str(6, 0, ptrthis->answer, 0);
+      disp_str(8, 0, ptrthis->answer, 0);
       msg(4);
       validInput = 0;
       do
@@ -595,7 +640,7 @@ void honor_system()
             validInput = 1;
          }
       } while (!validInput);
-      blanks(6, 0, 23, 99, 0); // clear answer
+      blanks(8, 0, 23, 99, 0); // clear answer
    } while (code == KEY_LEFT);
 }
 
