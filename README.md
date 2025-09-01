@@ -94,3 +94,58 @@ Quotes are only necessary for fields that contain commas or newlines.
 The best settings for Save As from LibreOffice Calc are as shown below, in the Export Text File dialog.
 
 ![](docs/assets/images/Edit_Filter_prior_to_Sava_As.png)
+
+## Build
+
+To provide all relevant context in my examples I'm showing unedited entries as I actually do them on my own pc. Please adapt to your own folder layouts. 
+
+Also in that regard while most people use sudo to run commands as root I do not so for those commands where the prompt ends with `:~#` (indicating root) please use `sudo` as required.
+
+Source code is on GitHub.
+```
+daniel@zombie:~/dev/code/c$ git clone https://github.com/dankurth/flashcards_C_console.git
+```
+
+### Build on Linux to run on Linux
+
+#### Examples
+Build on my Debian 12 machine to run (and debug) on Linux
+```
+daniel@zombie:~/dev/code/c/flashcards_C_console/src$ gcc -o flash fcm.c -I/usr/include/ncursesw/ncursesw -lncursesw -ltermcap -Wall -g
+```
+
+### Build on Linux to run on Windows
+
+To build for Windows first obtain Mingw-64.
+```
+root@zombie:~# apt install mingw-w64
+```
+
+Also need a Windows compatible version of ncurses.
+```
+daniel@zombie:~/dev$ git clone https://github.com/wmcbrine/PDCurses.git
+```
+
+Modify PDCurses/wincon/Makefile to match target.
+```
+#CC		= gcc
+#for 64-bit:
+CC		= x86_64-w64-mingw32-gcc
+#for 32-bit:
+#CC		= i686-w64-mingw32-gcc
+```
+
+After modifying Makefile run `make clean` followed by `make -f Makefile WIDE=Y UTF8=Y` (while in the PDCurses/wincon folder).
+
+#### Examples
+
+Build on my Debian 12 machine to run on Windows 10/11 (64-bit):
+```
+daniel@zombie:~/dev/code/c/flashcards_C_console/src$ x86_64-w64-mingw32-gcc -o flash.exe fcm.c -I/home/daniel/dev/PDCurses /home/daniel/dev/PDCurses/wincon/pdcurses.a
+```
+
+Build on my Debian 12 machine to run on Windows XP (32-bit):
+```
+daniel@zombie:~/dev/code/c/flashcards_C_console/src$ i686-w64-mingw32-gcc -o flash.exe fcm.c -I/home/daniel/dev/PDCurses /home/daniel/dev/PDCurses/wincon/pdcurses.a
+```
+
