@@ -1,17 +1,4 @@
-/* main program for C version of FLASH by Dan Kurth */
-/*
-Examples of builds tested:
-On virtual (VirtualBox 6.1.26) Windows XP using MinGW version v10.0.0:
-  gcc -I/MinGW/include/ncurses -o flash fcm.c -lncurses -L/MinGW/bin -static
-On Debian GNU/Linux:
-  // gcc -o flash fcm.c -I/usr/include/ncurses -lncurses -ltermcap -Wall -g
-  // does not display characters such as Él properly using mvprintw
-
-  gcc -o flash fcm.c -I/usr/include/ncursesw/ncursesw -lncursesw -ltermcap -Wall -g
-  // displays characters such as Él properly using mvprintw,
-  // even though still passing (char *) not (wchar_t *)
-
-*/
+// main program for C version of FLASH by Dan Kurth
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,6 +82,7 @@ int firstMenuRow = 0;          /* first row of str to display as menu */
 int lastMenuRow = 3;           /* last row of str to display as menu */
 int pos = 0;                   /* which row of menu highlighted */
 int code;                      /* keyboard input */
+char* version = " Build: " __DATE__ " " __TIME__;
 
 char strnum[4];
 int max_recs = 100; // limit per session in rfile, does not affect file stats shown to user
@@ -121,7 +109,8 @@ int main(int argc, char *argv[])
 
    while (!quit)
    {
-      disp_str(0, 0, " FLASH by Dan Kurth ", 1);
+      disp_str(0, 0, " FLASH by Dan Kurth ", 0);
+      disp_str(1, 0, version, 0);
       disp_str(0, 48, "Data File:", 0);
       disp_str(0, 59, datafile, 1);
       disp_menu();

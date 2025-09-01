@@ -4,7 +4,9 @@ I wrote Flash[^1] to study using the same simple system I still use for physical
 
 [^1]: Long ago, before Macromedia "Flash". 
 
-Questions are shown in random order along with related metadata. While a question is displayed the user can select the Right Arrow button to display the answer, or the 'q' button to return to the main menu.
+Questions are shown in random order along with optional instructions for what to do with it specific to the question shown. 
+Information about the number of cards in the file chosen and how many are already answered correctly versus remaining is also shown on the same page.
+While a question is displayed the user can select the Right Arrow button to display the answer, or the 'q' button to return to the main menu. 
 
 ![Question](docs/assets/images/a_flash_question_screen.png)
 
@@ -28,20 +30,20 @@ The menu has options to select a file, to study it, to clear the metadata for it
 The CSV may be created and edited using a text editor.
 
 ```
-1,one (in Spanish),uno
-1,"you (plural, familiar, in Spanish):
+0,one,uno,translate (Spanish)
+0,two,dos
+0,"you (plural, familiar, in Spanish):
   a. tú
   b. usted
-  c. vostros
+  c. vosotros
   d. vosotras
   e. vos
-  ",c
+  ",c,"Choose letter corresponding to correct answer, e.g. 'b', or 'e', or whatever you think it is."
 0,The original 13 colonies of the United States were,"New Hampshire, Massachusetts, Rhode Island, Connecticut, New York, New Jersey, Pennsylvania,
-Delaware, Maryland, Virginia, North Carolina, South Carolina, and Georgia."
-1,you or him,tú o Él
-1,you or him (2),tú o él o Él
-```
+Delaware, Maryland, Virginia, North Carolina, South Carolina, and Georgia.",
+0,you or him,tú o él
 
+```
 
 If using a text editor to modify CSV files directly it is possible you'll see an error due to a missing field. 
 
