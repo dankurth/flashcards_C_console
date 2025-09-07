@@ -1,4 +1,8 @@
 // main program for C version of FLASH by Dan Kurth
+// gcc -o flash fcm.c -I/usr/include/ncursesw/ncursesw -lncursesw -ltermcap -Wall -g
+// x86_64-w64-mingw32-gcc -o flash.exe fcm.c -I/home/daniel/dev/PDCurses /home/daniel/dev/PDCurses/wincon/pdcurses.a
+
+#define FLASH 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +17,7 @@
 #include "fcm.h"
 #include "display.c"
 #include "sel-file.c"
+#include "is_valid_utf8.c"
 
 /* C routines */
 void disp_menu(void); /* display menu to user */
@@ -34,6 +39,7 @@ void pick(int);                    /*                                */
 void disp_stats(void);             /* show session & file stats */
 void disp_stats_legend(void);      /* show legend for session & file stats */
 bool isEmptyOrSpaces(const char str[]);
+int validate_utf8(); // calls is_valid_utf8, returns zero if no problems
 
 void clrscr()
 {
@@ -82,7 +88,7 @@ int firstMenuRow = 0;          /* first row of str to display as menu */
 int lastMenuRow = 3;           /* last row of str to display as menu */
 int pos = 0;                   /* which row of menu highlighted */
 int code;                      /* keyboard input */
-char* version = " Build: " __DATE__ " " __TIME__;
+char *version = " Build: " __DATE__ " " __TIME__;
 
 char strnum[4];
 int max_recs = 100; // limit per session in rfile, does not affect file stats shown to user
@@ -183,8 +189,8 @@ void action()
       clrscr();
       sel_datafile(datafile, lastRow);
       break;
-   case 1:            // flash cards
-      if (!cntfile()) // if no errors
+   case 1:                                // flash cards
+      if (!validate_utf8() && !cntfile()) // if no errors
          myflash();
       break;
    case 2: // clear statistics
@@ -381,7 +387,7 @@ int rfile()
                      }
                      strncpy(ptrthis->instructions, ibuffer, strlen(ibuffer));
                      ptrthis->instructions[strlen(ibuffer)] = '\0';
-                  } 
+                  }
                   ibuffer[0] = '\0'; // do NOT re-use instructions for next row from CSV file
 
                   Ncount++;
@@ -473,6 +479,41 @@ int cntfile()
 
    fclose(fptr);
    return 0;
+}
+
+/** returns zero if datafile is valid utf8, 1 (or higher) indicates error */
+int validate_utf8()
+{
+
+   FILE *file = fopen(datafile, "rb");
+   if (file == NULL)
+   {
+      em("validate_utf8: Failed to open file");
+      return 1;
+   }
+
+   fseek(file, 0, SEEK_END);
+   long length = ftell(file);
+   fseek(file, 0, SEEK_SET);
+
+   unsigned char *buffer = malloc(length);
+   if (!buffer)
+   {
+      em("validate_utf8: Failed to allocate memory");
+      fclose(file);
+      return 1;
+   }
+
+   fread(buffer, 1, length, file);
+   fclose(file);
+
+   int validation = (is_valid_utf8(buffer, length)) ? 0 : 1; // zero on success
+   free(buffer);
+
+   if (validation)
+      em("validate_utf8: File is not valid UTF8.");
+
+   return validation;
 }
 
 void update_file()
