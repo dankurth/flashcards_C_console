@@ -221,7 +221,7 @@ int rfile()
    abuffer[0] = '\0';
    ibuffer[0] = '\0';
 
-   if ((fptr = fopen(datafile, "r")) == NULL)
+   if ((fptr = fopen(datafile, "rb")) == NULL)
    {
       em("rfile: Cannot open file");
       return 2;
@@ -439,7 +439,7 @@ int cntfile()
 
    filecnt.correct = 0;
    filecnt.total = 0;
-   if ((fptr = fopen(datafile, "r")) == NULL)
+   if ((fptr = fopen(datafile, "rb")) == NULL)
    {
       em("cntfile: Cannot open file");
       return 1;
@@ -525,7 +525,7 @@ void update_file()
       em("update_file: empty list");
       return;
    }
-   if ((fptr = fopen(datafile, "r+")) == NULL)
+   if ((fptr = fopen(datafile, "rb+")) == NULL)
    {
       em("update_file: failed to open file");
       return;
@@ -681,7 +681,7 @@ void disp_stats() // of cards in file, cards in memory are subset of those loade
 void clrfile() // set digit in column 1 to zero
 {
 
-   FILE *file = fopen(datafile, "r+");
+   FILE *file = fopen(datafile, "rb+");
    if (!file)
    {
       em("clrfile: Unable to open file");
