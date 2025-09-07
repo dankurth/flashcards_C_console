@@ -285,6 +285,9 @@ int rfile()
          continue;
       }
 
+      if (ch == '\r') // just ignore the stupid carriage return, regardless of what OS we're in
+         continue; // tested on both Windows & Linux, with & without CR's in files, okay so far
+
       // Handle newlines
       if (ch == '\n')
       {
