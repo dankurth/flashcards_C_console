@@ -40,6 +40,7 @@ void disp_stats(void);             /* show session & file stats */
 void disp_stats_legend(void);      /* show legend for session & file stats */
 bool isEmptyOrSpaces(const char str[]);
 int validate_utf8(); // calls is_valid_utf8, returns zero if no problems
+void about(void);
 
 void clrscr()
 {
@@ -81,14 +82,15 @@ char *str[] = {
     "select file     ", // main menu
     "flash cards     ",
     "clear statistics",
+    "about",
     "quit            "};
 
 char datafile[256] = "NoName"; /* name of file to use as datafile */
 int firstMenuRow = 0;          /* first row of str to display as menu */
-int lastMenuRow = 3;           /* last row of str to display as menu */
+int lastMenuRow = 4;           /* last row of str to display as menu */
 int pos = 0;                   /* which row of menu highlighted */
 int code;                      /* keyboard input */
-char *version = " Build: " __DATE__ " " __TIME__;
+char *version = "Build: " __DATE__ " " __TIME__;
 
 char strnum[4];
 int max_recs = 100; // limit per session in rfile, does not affect file stats shown to user
@@ -115,8 +117,6 @@ int main(int argc, char *argv[])
 
    while (!quit)
    {
-      disp_str(0, 0, " FLASH by Dan Kurth ", 0);
-      disp_str(1, 0, version, 0);
       disp_str(0, 48, "Data File:", 0);
       disp_str(0, 59, datafile, 1);
       disp_menu();
@@ -196,12 +196,25 @@ void action()
    case 2: // clear statistics
       clrfile();
       break;
-   case 3: // quit program
+   case 3:
+      about();
+      break;
+   case 4: // quit program
       quit = 1;
       return;
    }
    clrscr();
    msg(0);
+}
+
+void about()
+{
+   clear();
+   disp_str(0, 1, "FLASH by Dan Kurth ", 0);
+   disp_str(1, 1, "https://github.com/dankurth/flashcards_C_console", 0);
+   disp_str(2, 1, version, 0);
+   disp_str(4, 1, "Press any key to continue", 0);
+   getch();
 }
 
 int rfile()
@@ -286,7 +299,7 @@ int rfile()
       }
 
       if (ch == '\r') // just ignore the stupid carriage return, regardless of what OS we're in
-         continue; // tested on both Windows & Linux, with & without CR's in files, okay so far
+         continue;    // tested on both Windows & Linux, with & without CR's in files, okay so far
 
       // Handle newlines
       if (ch == '\n')
