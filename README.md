@@ -1,11 +1,18 @@
 # FLASH
 
-I wrote Flash[^1] to study using the same simple system I still use for physical flashcards: adding questions and answers myself, organizing them in sets by subject, reviewing repeatedly while setting aside those I know until none remain.
+FLASH[^1] is a simple to use general purpose flashcards program.
 
-[^1]: Long ago, before Macromedia "Flash". 
+[^1]: The name is perhaps unfortunate, but I chose it many years ago when I wrote the first version (for DOS, using Turbo C and MASM), long before Flash by MacroMedia became famous. I even made a icon for it with a stylized lightning bolt next to the name! Oh well.
 
-Questions are shown in random order along with optional instructions for what to do with it specific to the question shown. 
+The current version is text and desktop-only. It is developed on Debian 12 primarily for Linux (because that's where I personally use it :) but also easily cross-compiles for Windows.[^2]
+
+[^2]: Details in "Build on Linux to run on Windows" section.
+
+## Flashing
+
+Questions are shown in random order along with optional instructions for what to do specific to the question shown. 
 Information about the number of cards in the file chosen and how many are already answered correctly versus remaining is also shown on the same page.
+
 While a question is displayed the user can select the Right Arrow button to display the answer, or the 'q' button to return to the main menu. 
 
 ![Question](docs/assets/images/a_flash_question_screen.png)
@@ -14,18 +21,31 @@ While an answer is displayed the user can select the Left Arrow to display the q
 
 ![Answer](./docs/assets/images/a_flash_answer_screen.png)
 
-Questions and answers are loaded from a CSV file. 
-
-Flash must be started manually within a terminal. Specifying a CSV on startup is optional.
+Questions and answers are loaded from CSV files, each of which may contain many flashcards (question/answer pairs). 
 
 ![](docs/assets/images/open_flash_with_data_file.png)
 
-The menu has options to select a file, to study it, to clear the metadata for it or to quit.
+The menu has options to select a file, to study it, to clear the metadata for it, to view info such as when it was built or to quit.
 
 ![](docs/assets/images/flash_home_screen.png)
 
+Read all about it
 
-## CSV
+![about](docs/assets/images/about.png)
+
+### Security
+
+Unlike many programs there is no "install" process or root/admin access required. 
+
+Both the flashcards and the pass/fail history for those cards are stored together in CSV files, and the program can read and update only those CSV files for which the user has read/write access, if and when the user chooses to use those files.[^3]
+
+[^3]: The program is also further restricted internally in that it will refuse to use content that is not encoded as UTF-8 or that is not properly organized with the CSV delimited fields and field types or values that it expects.
+
+Because pass/fail history for each card is saved in the same file as the flashcards it is necessary that each user use only their own files. This should not normally be an issue because users have access only to their files, but If for some reason users share a user account or share files or folders then they can work still work around this issue by keeping copies of the files in separate folders for usage by separate individuals.
+
+## Editing
+
+### CSV
 
 The CSV may be created and edited using a text editor.
 
@@ -63,13 +83,13 @@ A better solution while modifying the CVS using a text editor is to first align 
 
 ![](docs/assets/images/without_leading_newline.png)
 
-## Spreadsheet
+### Spreadsheet
 
 Content may also be created or edited using a spreadsheet, then saved as a CSV file.
 
 ![](docs/assets/images/in_LibreOffice_Calc.png)
 
-### Import
+#### Import
 
 ![](docs/assets/images/import_into_LibreCalc.png)
 
@@ -77,7 +97,7 @@ As noted in the previous section the CSV must be properly formatted to avoid err
 
 ![](docs/assets/images/bad_import_due_to_empty_column.png)
 
-### Save As
+#### Save As
 
 The file must be saved as a CSV file.
 
@@ -95,7 +115,7 @@ The best settings for Save As from LibreOffice Calc are as shown below, in the E
 
 ![](docs/assets/images/Edit_Filter_prior_to_Sava_As.png)
 
-## Build
+## Building
 
 To provide all relevant context in my examples I'm showing unedited entries as I actually do them on my own pc. Please adapt to your own folder layouts. 
 
